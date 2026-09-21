@@ -1,0 +1,128 @@
+/* SweetAlert2's own container defaults to z-index: 1060, which sits BELOW
+   .fb-modal__root's z-index: 1080 — so a confirm dialog opened while a form
+   modal is open (e.g. "Discard changes?") rendered fully behind it and was
+   invisible, even though it was still present and technically clickable.
+   Force it above every app modal. */
+.swal2-container {
+  z-index: 1090 !important;
+}
+
+.fb-swal {
+  border-radius: 0.9rem !important;
+  box-shadow: var(--shadow-md) !important;
+  padding: 1.5rem 1.5rem 1.25rem !important;
+  font-family: var(--font-sans) !important;
+}
+
+.fb-swal__title {
+  font-family: var(--font-display) !important;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  color: var(--ink) !important;
+  padding: 0 !important;
+  margin: 0.9rem 0 0 !important;
+}
+
+.fb-swal__text {
+  font-size: 0.9rem !important;
+  color: var(--ink-soft) !important;
+  margin-top: 0.4rem !important;
+}
+
+/* SweetAlert2 sizes its icon glyph (the "?"/"!" text, and the success/
+   error checkmark/x-mark) for its own default 5rem icon. Shrinking just
+   the outer circle to 3.25rem leaves that content at its original size,
+   so it overflows and reads as off-centre — rescale it here too. */
+.fb-swal__icon {
+  box-sizing: content-box !important;
+  border: none !important;
+  width: 3.25rem !important;
+  height: 3.25rem !important;
+  line-height: normal !important;
+  margin: 0.4rem auto 0.2rem !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+.fb-swal__icon .swal2-icon-content {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  font-size: 1.75rem !important;
+  line-height: 1 !important;
+}
+.fb-swal__icon.swal2-success .swal2-success-ring {
+  inset: 0 !important;
+  border-color: rgba(21, 128, 61, 0.25) !important;
+}
+.fb-swal__icon.swal2-success [class^='swal2-success-line'] {
+  background-color: var(--ok) !important;
+}
+.fb-swal__icon.swal2-error .swal2-x-mark {
+  position: relative !important;
+}
+.fb-swal__icon.swal2-error [class^='swal2-x-mark-line'] {
+  background-color: var(--danger) !important;
+}
+.fb-swal__icon.swal2-warning {
+  color: var(--warn) !important;
+  background: var(--warn-bg) !important;
+}
+.fb-swal__icon.swal2-question {
+  color: var(--fb-blue) !important;
+  background: var(--fb-blue-soft) !important;
+}
+.fb-swal__icon.swal2-success {
+  color: var(--ok) !important;
+  background: var(--ok-bg) !important;
+}
+.fb-swal__icon.swal2-error {
+  color: var(--danger) !important;
+  background: var(--danger-bg) !important;
+}
+
+.fb-swal__actions {
+  margin-top: 1.4rem !important;
+  gap: 0.5rem !important;
+}
+
+/* Loading state (Swal.showLoading()) — recolour the default spinner to
+   match the rest of the app's fb-loader instead of SweetAlert2's pink. */
+.fb-swal .swal2-loader {
+  border-color: var(--fb-blue-soft) !important;
+  border-right-color: var(--fb-blue) !important;
+  border-bottom-color: var(--fb-blue) !important;
+}
+
+.fb-swal__btn {
+  font-family: var(--font-sans) !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 0.55rem 1.1rem !important;
+  border: 1px solid transparent !important;
+  transition: filter 0.15s var(--ease) !important;
+  box-shadow: none !important;
+}
+.fb-swal__btn--primary {
+  background: var(--fb-blue) !important;
+  color: #fff !important;
+}
+.fb-swal__btn--primary:hover {
+  filter: brightness(0.92) !important;
+}
+.fb-swal__btn--danger {
+  background: var(--danger) !important;
+  color: #fff !important;
+}
+.fb-swal__btn--danger:hover {
+  filter: brightness(0.92) !important;
+}
+.fb-swal__btn--secondary {
+  background: var(--surface) !important;
+  color: var(--ink-soft) !important;
+  border-color: var(--border-strong) !important;
+}
+.fb-swal__btn--secondary:hover {
+  background: var(--surface-2) !important;
+}

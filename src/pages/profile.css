@@ -1,0 +1,103 @@
+.fb-profile__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+@media (min-width: 768px) {
+  .fb-profile__grid {
+    grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr);
+  }
+}
+
+.fb-profile__identity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.25rem;
+}
+
+/* Square, full (uncropped-looking) portrait that scales with its card. */
+.fb-profile__photo {
+  display: block;
+  width: 100%;
+  max-width: 17rem;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius);
+  border: 1px solid var(--border-strong);
+  background: var(--fb-blue-soft);
+}
+.fb-profile__photo--fallback {
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 12vw, 4.5rem);
+  font-weight: 700;
+  color: var(--fb-blue-dark);
+}
+
+.fb-profile__name {
+  margin: 1rem 0 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.fb-profile__position {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.fb-profile__role {
+  margin-top: 0.7rem;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid var(--fb-blue);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--fb-blue-dark);
+}
+
+.fb-profile__details {
+  margin: 0;
+}
+.fb-profile__row {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr);
+  gap: 1rem;
+  padding: 0.75rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+}
+.fb-profile__row:nth-child(even) {
+  background: #f8f9fb;
+}
+.fb-profile__row dt {
+  font-weight: 600;
+  color: var(--muted);
+}
+.fb-profile__row dd {
+  margin: 0;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.fb-profile__note {
+  margin: 0;
+  padding: 0.75rem 1.1rem;
+  font-size: 0.78rem;
+  color: var(--faint);
+}
+
+@media (max-width: 575.98px) {
+  .fb-profile__row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.15rem;
+  }
+  .fb-profile__photo {
+    max-width: 14rem;
+  }
+}

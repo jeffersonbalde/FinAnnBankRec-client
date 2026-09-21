@@ -1,0 +1,119 @@
+.fb-bell {
+  position: relative;
+}
+.fb-bell__btn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.15s var(--ease);
+}
+.fb-bell__btn:hover {
+  background: var(--surface-2);
+  color: var(--ink-soft);
+}
+.fb-bell__dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 3px;
+  border-radius: 999px;
+  background: var(--fb-blue);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--surface);
+}
+.fb-bell__menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.4rem);
+  width: 320px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.7rem;
+  box-shadow: var(--shadow-md);
+  z-index: 1055;
+  overflow: hidden;
+  animation: fb-menu-in 0.18s var(--ease);
+}
+.fb-bell__menu-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  font-family: var(--font-display);
+}
+.fb-bell__menu-head button {
+  border: none;
+  background: none;
+  color: var(--fb-blue);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.fb-bell__list {
+  max-height: 320px;
+  overflow-y: auto;
+}
+.fb-bell__empty {
+  padding: 2rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--faint);
+}
+.fb-bell__item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 0.65rem 0.9rem;
+  border-bottom: 1px solid #f1f5f9;
+  cursor: pointer;
+}
+.fb-bell__item:hover {
+  background: var(--surface-2);
+}
+.fb-bell__msg {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+.fb-bell__item.is-unread .fb-bell__msg {
+  color: var(--ink);
+  font-weight: 600;
+}
+.fb-bell__meta {
+  margin: 0.15rem 0 0;
+  font-size: 0.7rem;
+  color: var(--faint);
+}
+.fb-bell__all {
+  width: 100%;
+  border: none;
+  border-top: 1px solid var(--border);
+  background: none;
+  padding: 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--fb-blue);
+  cursor: pointer;
+}
+.fb-bell__all:hover {
+  background: var(--surface-2);
+}

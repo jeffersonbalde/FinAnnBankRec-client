@@ -1,0 +1,76 @@
+.dash-grid {
+  margin-top: 1.25rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+@media (min-width: 992px) {
+  .dash-grid {
+    grid-template-columns: 2fr 1fr;
+  }
+  .dash-grid--main {
+    grid-template-columns: 3fr 1fr;
+  }
+}
+
+.dash-chart {
+  height: 18rem;
+}
+.dash-chart__empty {
+  text-align: center;
+  margin-top: 4rem;
+}
+
+.dash-fund-card {
+  min-width: 0;
+  max-width: 100%;
+}
+.dash-fund-card__body {
+  max-height: 18rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.dash-fund {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.dash-fund__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.dash-fund__name {
+  font-weight: 700;
+  font-size: 0.875rem;
+  color: var(--ink);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dash-fund__meta {
+  margin: 0.15rem 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dash-fund__none {
+  font-size: 0.75rem;
+  color: var(--faint);
+  flex-shrink: 0;
+}
+
+@media (max-width: 991.98px) {
+  .dash-fund-card__body {
+    max-height: 14rem;
+  }
+}

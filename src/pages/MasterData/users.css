@@ -1,0 +1,267 @@
+/* Users page — flat card directory + form */
+
+.fb-user-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.fb-user-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-width: 100%;
+}
+.fb-user-card.is-inactive {
+  opacity: 0.72;
+}
+.fb-user-card__photo {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--table-head-bg);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+}
+.fb-user-card__photo .fb-user-avatar,
+.fb-user-card__photo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.fb-user-card__body {
+  padding: 0.85rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  min-width: 0;
+}
+.fb-user-card__meta {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+.fb-user-card__name {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.25;
+}
+.fb-user-card__role {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.fb-user-card__details {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.8rem;
+}
+.fb-user-card__details dt {
+  color: var(--faint);
+  font-weight: 500;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.fb-user-card__details dd {
+  margin: 0.1rem 0 0;
+  color: var(--ink-soft);
+  word-break: break-word;
+}
+.fb-user-card__actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-top: auto;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--border);
+}
+
+.fb-user-avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  background: var(--fb-blue-soft);
+  color: var(--fb-blue-dark);
+  font-weight: 700;
+  overflow: hidden;
+}
+.fb-user-avatar--lg {
+  width: 100%;
+  height: 100%;
+  font-size: 2.5rem;
+  border-radius: 0;
+}
+.fb-user-avatar--fallback {
+  background: var(--fb-blue);
+  color: #fff;
+}
+
+.fb-user-toolbar__role {
+  width: 12.5rem;
+}
+.fb-user-toolbar__perpage {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.fb-user-toolbar__perpage .form-select {
+  width: 5rem;
+}
+
+/* Mobile / tablet: same square card as desktop, just fewer columns */
+@media (max-width: 767.98px) {
+  .fb-user-toolbar__role {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
+  .fb-user-toolbar__add {
+    flex: 1 1 100%;
+  }
+
+  .fb-user-grid {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 0.85rem;
+  }
+
+  .fb-user-card {
+    width: 100%;
+    max-width: 17.5rem;
+    flex-direction: column;
+  }
+
+  .fb-user-form__photo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1099.98px) {
+  .fb-user-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .fb-user-grid {
+    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  }
+}
+
+.fb-user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+.fb-user-form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 0.85rem;
+}
+@media (max-width: 640px) {
+  .fb-user-form__grid {
+    grid-template-columns: 1fr;
+  }
+}
+.fb-user-form__photo {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+.fb-user-form__photo-preview {
+  width: 7.5rem;
+  height: 7.5rem;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+.fb-user-form__photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.fb-user-form__photo-empty {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--faint);
+  background: var(--table-head-bg);
+}
+.fb-user-form__photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  padding-bottom: 0.15rem;
+}
+.fb-user-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid var(--border);
+}
+
+.fb-password {
+  position: relative;
+}
+.fb-password .form-control {
+  padding-right: 2.75rem;
+}
+/* Hide Bootstrap/browser invalid icon so it doesn't cover the eye toggle */
+.fb-password .form-control.is-invalid {
+  background-image: none !important;
+  padding-right: 2.75rem;
+}
+.fb-password__toggle {
+  position: absolute;
+  right: 0.45rem;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  background: none;
+  border: none;
+  color: var(--faint);
+  cursor: pointer;
+  padding: 0.35rem;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+  pointer-events: auto;
+}
+.fb-password__toggle:hover {
+  color: var(--ink-soft);
+}
+.fb-password__toggle:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 1px;
+  border-radius: 4px;
+}

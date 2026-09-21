@@ -1,0 +1,138 @@
+@import 'tailwindcss';
+
+/*
+ * FinAnnBankRec design system — WPDS layout language in the TESDA palette.
+ * TESDA logo colours: #0000FE (blue), #FFFFFF (white). No red accent.
+ * One typeface system-wide: Inter. --font-display exists only so heading
+ * rules can be found/tuned separately; it is not a second font.
+ */
+
+@theme {
+  --color-fb-blue: #0000fe;
+  --color-fb-blue-dark: #0000c2;
+  --color-fb-navy: #0a0a6e;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+:root {
+  /* TESDA primary: logo blue + white. Neutrals for surfaces. Status
+     greens/ambers/reds stay functional but quieter so the UI isn't noisy. */
+  --fb-blue: #0000fe;
+  --fb-blue-dark: #0000c2;
+  --fb-blue-soft: #eef1ff;
+  --fb-navy: #0a0a6e;
+  --fb-navy-deep: #06064a;
+  --fb-navy-line: rgba(255, 255, 255, 0.09);
+  --fb-nav-text: #d7dcff;
+  --fb-nav-heading: rgba(215, 220, 255, 0.5);
+  --fb-nav-hover: rgba(255, 255, 255, 0.08);
+  --fb-nav-active-border: #8ab4ff;
+
+  --dash-bg: #f5f6f8;
+  --surface: #ffffff;
+  --surface-2: #f8f9fb;
+  --table-head-bg: #eef0f4;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --ink: #0f172a;
+  --ink-soft: #334155;
+  --muted: #64748b;
+  --faint: #94a3b8;
+
+  --ok: #166534;
+  --ok-bg: #ecfdf3;
+  --warn: #a16207;
+  --warn-bg: #fffbeb;
+  --danger: #b91c1c;
+  --danger-bg: #fef2f2;
+  --blue-bg: #eef1ff;
+
+  /* Flat surfaces (WPDS look): cards/panels/tables carry a border, not a
+     shadow — --shadow-sm is only kept as a token so it can be reused for a
+     future accent; --shadow-md stays for floating overlays (modals, the
+     user-menu dropdown), which do get elevation. */
+  --shadow-sm: none;
+  --shadow-md: 0 12px 28px rgba(10, 20, 80, 0.12);
+  --radius: 0.25rem;
+  --radius-sm: 0.25rem;
+  --ease: cubic-bezier(0.4, 0, 0.2, 1);
+
+  --sidebar-width: 250px;
+  --topbar-height: 52px;
+
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--dash-bg);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.25;
+}
+
+a {
+  color: var(--fb-blue);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--fb-blue-dark);
+}
+
+/* Thin scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+
+/* Keep Bootstrap's form controls, drop its heavy focus glow */
+.form-control,
+.form-select {
+  font-size: 0.9rem;
+  border-color: var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--ink);
+}
+.form-control::placeholder {
+  color: var(--faint);
+  opacity: 1;
+}
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--fb-blue);
+  box-shadow: 0 0 0 3px rgba(0, 0, 254, 0.14);
+}

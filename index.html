@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="/favicon.png?v=2" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..800;1,14..32,400..800&display=swap"
+      rel="stylesheet"
+    />
+    <title>FinAnnBankRec</title>
+    <style>
+      #fb-splash {
+        position: fixed;
+        inset: 0;
+        z-index: 9998;
+        display: grid;
+        place-items: center;
+        background: #0000fe;
+        font-family: 'Inter', system-ui, sans-serif;
+        transition: opacity 0.35s ease, visibility 0.35s ease;
+      }
+      #fb-splash.is-hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+      }
+      #fb-splash .fb-splash__mark {
+        position: relative;
+        width: 6.5rem;
+        height: 6.5rem;
+        display: grid;
+        place-items: center;
+      }
+      #fb-splash .fb-splash__logo-disc {
+        position: relative;
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        width: 5rem;
+        height: 5rem;
+        border-radius: 50%;
+        background: #fff;
+      }
+      #fb-splash .fb-splash__logo {
+        width: 3.75rem;
+        height: 3.75rem;
+        object-fit: contain;
+        display: block;
+      }
+      #fb-splash .fb-splash__ring {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        border-top-color: rgba(255, 255, 255, 0.9);
+        border-right-color: rgba(255, 255, 255, 0.2);
+        animation: fb-splash-spin 0.85s linear infinite;
+      }
+      @keyframes fb-splash-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #fb-splash .fb-splash__ring {
+          animation: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="fb-splash" role="status" aria-live="polite" aria-label="Loading">
+      <div class="fb-splash__mark">
+        <span class="fb-splash__ring" aria-hidden="true"></span>
+        <span class="fb-splash__logo-disc">
+          <img class="fb-splash__logo" src="/favicon.png" alt="" />
+        </span>
+      </div>
+    </div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
