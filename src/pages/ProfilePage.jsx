@@ -53,10 +53,6 @@ export default function ProfilePage() {
               </div>
             ))}
           </dl>
-          <p className="fb-profile__note">
-            These details are view only. To change your name, position, email or photo, ask the system
-            administrator.
-          </p>
         </section>
       </div>
     </div>
