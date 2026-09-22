@@ -64,13 +64,26 @@
 .fb-swal__icon.swal2-error [class^='swal2-x-mark-line'] {
   background-color: var(--danger) !important;
 }
+/* Used for danger confirms (Deactivate, Delete, cancel check, etc.) — kept red,
+   not amber, so it matches the red confirm button under it and the rest of
+   the app's danger state (fb-badge--danger, fb-btn--danger), instead of
+   introducing an off-palette yellow. */
 .fb-swal__icon.swal2-warning {
-  color: var(--warn) !important;
-  background: var(--warn-bg) !important;
+  color: var(--danger) !important;
+  background: var(--danger-bg) !important;
 }
 .fb-swal__icon.swal2-question {
   color: var(--fb-blue) !important;
   background: var(--fb-blue-soft) !important;
+}
+.fb-swal__icon.swal2-info {
+  color: var(--fb-blue) !important;
+  background: var(--fb-blue-soft) !important;
+  border: none !important;
+}
+.fb-swal__icon.swal2-info .swal2-icon-content {
+  font-size: 2rem !important;
+  font-weight: 700 !important;
 }
 .fb-swal__icon.swal2-success {
   color: var(--ok) !important;

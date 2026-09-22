@@ -7,6 +7,7 @@ const VARIANT = {
   ghost: 'fb-btn--link',
   danger: 'fb-btn--danger',
   subtle: 'fb-btn--subtle',
+  slate: 'fb-btn--slate',
 }
 
 export default function Button({

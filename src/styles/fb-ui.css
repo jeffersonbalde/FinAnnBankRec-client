@@ -48,6 +48,13 @@
 .fb-btn--danger:not(:disabled):hover {
   filter: brightness(0.92);
 }
+.fb-btn--slate {
+  background: #475569;
+  color: #fff;
+}
+.fb-btn--slate:not(:disabled):hover {
+  background: #334155;
+}
 .fb-btn--subtle {
   background: var(--surface);
   color: var(--fb-blue-dark);
@@ -100,7 +107,8 @@
   border-width: 2px;
 }
 .fb-btn--primary .fb-btn__spinner,
-.fb-btn--danger .fb-btn__spinner {
+.fb-btn--danger .fb-btn__spinner,
+.fb-btn--slate .fb-btn__spinner {
   border-color: rgba(255, 255, 255, 0.35);
   border-top-color: #fff;
 }

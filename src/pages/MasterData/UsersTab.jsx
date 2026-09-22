@@ -5,7 +5,7 @@ import { extractErrorMessage } from '../../lib/api'
 import { ROLE_LABELS, ROLES, ASSIGNABLE_ROLE_LABELS } from '../../lib/roles'
 import { useAuth } from '../../context/AuthContext'
 import { notifyError, notifySuccess } from '../../lib/toast'
-import { fbConfirm } from '../../lib/confirm'
+import { fbConfirm, fbAlert } from '../../lib/confirm'
 import { useRegisterModalDirty } from '../../context/ModalDirtyContext'
 import { useConfirmClose } from '../../hooks/useConfirmClose'
 import Pagination from '../../components/ui/Pagination'
@@ -241,6 +241,35 @@ export default function UsersTab() {
     }
   }
 
+  async function deleteUser(row) {
+    // Checked up front, before any confirmation dialog: a user with activity
+    // (reconciliations, imports, audit history) can never be deleted, so don't
+    // even offer the option — explain why instead.
+    if (!row.deletable) {
+      await fbAlert(
+        'This user cannot be deleted',
+        `${row.name} has existing activity (reconciliations, imports, or audit history) that must keep its accountable name. Deactivate the account instead — it blocks sign-in but keeps that history intact.`,
+      )
+      return
+    }
+
+    const ok = await fbConfirm({
+      title: 'Delete user?',
+      text: `${row.name} — ${row.email}. This cannot be undone.`,
+      confirmText: 'Delete',
+      danger: true,
+    })
+    if (!ok) return
+
+    try {
+      await api.delete(`/users/${row.id}`)
+      notifySuccess('User deleted.')
+      await reload()
+    } catch (err) {
+      await fbAlert('Could not delete this user', extractErrorMessage(err, 'This user has existing records and cannot be deleted. Deactivate the account instead.'))
+    }
+  }
+
   async function toggleActive(row) {
     const deactivating = row.is_active
     const ok = await fbConfirm({
@@ -348,8 +377,18 @@ export default function UsersTab() {
                     Edit
                   </Button>
                   {u.id !== currentUser.id && (
-                    <Button size="sm" variant="secondary" onClick={() => toggleActive(u)}>
+                    <Button size="sm" variant="slate" onClick={() => toggleActive(u)}>
                       {u.is_active ? 'Deactivate' : 'Activate'}
+                    </Button>
+                  )}
+                  {u.id !== currentUser.id && (
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => deleteUser(u)}
+                      title={u.deletable ? undefined : 'Has activity history — deactivate instead'}
+                    >
+                      Delete
                     </Button>
                   )}
                 </div>

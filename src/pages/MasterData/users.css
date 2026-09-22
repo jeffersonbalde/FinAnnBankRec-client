@@ -2,7 +2,7 @@
 
 .fb-user-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
   gap: 0.85rem;
   margin-bottom: 1rem;
 }
@@ -81,10 +81,18 @@
 }
 .fb-user-card__actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
   gap: 0.4rem;
   margin-top: auto;
-  padding-top: 0.35rem;
+  padding-top: 0.55rem;
   border-top: 1px solid var(--border);
+}
+.fb-user-card__actions .fb-btn {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+  white-space: nowrap;
 }
 
 .fb-user-avatar {
@@ -162,7 +170,7 @@
 
 @media (min-width: 1100px) {
   .fb-user-grid {
-    grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(15.5rem, 1fr));
   }
 }
 

@@ -49,6 +49,11 @@ export function fbSuccess(title, text = '') {
   return Swal.fire({ ...base, icon: 'success', title, text, confirmButtonText: 'OK' })
 }
 
+/** Info/blocked-action modal with a single OK button — for messages too long for a toast. */
+export function fbAlert(title, text = '') {
+  return Swal.fire({ ...base, icon: 'info', title, text, confirmButtonText: 'OK' })
+}
+
 export function fbLoading(title = 'Working…') {
   Swal.fire({
     ...base,
