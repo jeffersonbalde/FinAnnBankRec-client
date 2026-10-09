@@ -5,11 +5,12 @@ import { useAuth } from '../context/AuthContext'
 import { useModalDirty } from '../context/ModalDirtyContext'
 import { useNotificationUnread } from '../context/NotificationUnreadContext'
 import { visibleNavItems } from '../lib/nav'
-import { ROLE_LABELS } from '../lib/roles'
+import { ROLE_LABELS, ROLES } from '../lib/roles'
+import useLocalBackupSync from '../hooks/useLocalBackupSync'
 import { fbConfirm, fbLoading, fbClose } from '../lib/confirm'
 import { notifyError } from '../lib/toast'
 import NotificationBell from './NotificationBell'
-import tesdaLogo from '../assets/tesda_logo.png'
+import fabresLogo from '../assets/fabres_logo.png'
 import './layout.css'
 
 function initials(name = '') {
@@ -34,6 +35,7 @@ export default function AppLayout() {
   const items = visibleNavItems(user?.role)
   const hasUnsavedChanges = useModalDirty()
   const { unread } = useNotificationUnread()
+  useLocalBackupSync(user?.role === ROLES.ADMIN)
 
   async function guardedNavigate(e, to) {
     if (!hasUnsavedChanges) return
@@ -96,8 +98,8 @@ export default function AppLayout() {
 
       <aside className="fb-dash__sidebar">
         <NavLink to="/" className="fb-dash__brand" onClick={(e) => guardedNavigate(e, '/')}>
-          <img src={tesdaLogo} alt="TESDA" className="fb-dash__brand-mark" />
-          <span className="fb-dash__brand-title">FinAnnBankRec</span>
+          <img src={fabresLogo} alt="FABReS" className="fb-dash__brand-mark" />
+          <span className="fb-dash__brand-title">FABReS</span>
         </NavLink>
 
         <nav className="fb-dash__nav">
@@ -172,7 +174,10 @@ export default function AppLayout() {
         </header>
 
         <main className="fb-dash__main">
-          <Outlet />
+          {/* Keyed by path so every page change replays the fade-in. */}
+          <div key={location.pathname} className="fb-page-fade">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

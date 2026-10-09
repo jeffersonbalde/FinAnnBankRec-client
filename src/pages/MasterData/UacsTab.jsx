@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { FiPlus } from 'react-icons/fi'
 import { useResource } from '../../hooks/useResource'
+import { useRowSelection } from '../../hooks/useRowSelection'
+import { bulkRemove } from '../../lib/bulk'
 import { extractErrorMessage } from '../../lib/api'
 import { notifyError, notifySuccess } from '../../lib/toast'
 import { fbConfirm } from '../../lib/confirm'
@@ -8,6 +10,7 @@ import { useRegisterModalDirty } from '../../context/ModalDirtyContext'
 import { useConfirmClose } from '../../hooks/useConfirmClose'
 import DataTable from '../../components/ui/DataTable'
 import Pagination from '../../components/ui/Pagination'
+import { BulkBar, selectColumn, selectedRowClass } from '../../components/ui/RowSelect'
 import Button from '../../components/ui/Button'
 import Modal from '../../components/ui/Modal'
 import { Field, TextInput, Checkbox, Select } from '../../components/ui/Field'
@@ -28,6 +31,27 @@ export default function UacsTab() {
     params: { page, per_page: perPage },
   })
   const startIndex = meta ? (meta.current_page - 1) * meta.per_page : 0
+
+  // Removing the last rows of the last page leaves it empty: step back to a page that has rows.
+  if (!loading && items.length === 0 && meta && page > meta.last_page && meta.last_page >= 1) setPage(meta.last_page)
+
+  // Ticked codes stay ticked while paging, but not across a change of page size.
+  const selection = useRowSelection(String(perPage), 100)
+  const [bulkBusy, setBulkBusy] = useState(false)
+
+  function removePicked() {
+    return bulkRemove({
+      url: '/reference-uacs/bulk-delete',
+      ids: selection.list.map((r) => r.id),
+      noun: 'UACS code',
+      text: 'Checks that already use these codes keep the code they were saved with. This cannot be undone.',
+      setBusy: setBulkBusy,
+      onDone: async () => {
+        selection.clear()
+        await reload()
+      },
+    })
+  }
 
   const [editing, setEditing] = useState(null) // object | 'new' | null
   const [form, setForm] = useState(BLANK)
@@ -101,6 +125,7 @@ export default function UacsTab() {
   }
 
   const columns = [
+    selectColumn(selection, items, () => true),
     {
       key: 'num',
       header: '#',
@@ -131,7 +156,9 @@ export default function UacsTab() {
     <div>
       <div className="fb-toolbar">
         <span className="fb-toolbar__spacer" />
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--muted)' }}>
+        <label
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--muted)' }}
+        >
           Rows
           <Select value={perPage} onChange={(e) => setPerPage(Number(e.target.value))} style={{ width: '5rem' }}>
             {PER_PAGE_OPTIONS.map((n) => (
@@ -146,17 +173,28 @@ export default function UacsTab() {
         </Button>
       </div>
 
-      {error && <div className="fb-alert fb-alert--danger" style={{ marginBottom: '0.9rem' }}>{error}</div>}
+      {error && (
+        <div className="fb-alert fb-alert--danger" style={{ marginBottom: '0.9rem' }}>
+          {error}
+        </div>
+      )}
 
       <DataTable
         columns={columns}
         rows={items}
+        head={<BulkBar count={selection.count} onClear={selection.clear} onAction={removePicked} busy={bulkBusy} />}
+        rowClassName={selectedRowClass(selection)}
         loading={loading}
         empty="No UACS codes yet."
         footer={<Pagination meta={meta} onPageChange={setPage} />}
       />
 
-      <Modal open={!!editing} onClose={requestClose} icon={<FiPlus size={16} />} title={editing === 'new' ? 'New UACS code' : 'Edit UACS code'}>
+      <Modal
+        open={!!editing}
+        onClose={requestClose}
+        icon={<FiPlus size={16} />}
+        title={editing === 'new' ? 'New UACS code' : 'Edit UACS code'}
+      >
         <form onSubmit={save} className="space-y-4">
           <Field label="UACS Object Code" error={fieldErrors.code?.[0]}>
             <TextInput

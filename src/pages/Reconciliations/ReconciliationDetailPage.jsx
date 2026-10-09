@@ -3,11 +3,12 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { FiArrowLeft } from 'react-icons/fi'
 import api, { extractErrorMessage } from '../../lib/api'
 import { money, shortDate } from '../../lib/format'
-import { FullPageSpinner } from '../../components/Spinner'
+import { CardSkeleton, StatSkeleton } from '../../components/ui/Skeletons'
 import PageHeader from '../../components/PageHeader'
 import Badge from '../../components/ui/Badge'
 import Tabs from '../../components/ui/Tabs'
-import ImportsTab from './ImportsTab'
+import ChecksTab from './ChecksTab'
+import BankStatementTab from './BankStatementTab'
 import MatchingTab from './MatchingTab'
 import ReconcilingItemsTab from './ReconcilingItemsTab'
 import BrsTab from './BrsTab'
@@ -29,7 +30,7 @@ export default function ReconciliationDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
-  const [tab, setTab] = useState('imports')
+  const [tab, setTab] = useState('checks')
 
   const load = useCallback(async () => {
     try {
@@ -50,7 +51,25 @@ export default function ReconciliationDetailPage() {
     load()
   }, [load])
 
-  if (loading) return <FullPageSpinner />
+  if (loading) {
+    // The same shape as the loaded page: back link, title, five stat cards, then the tab content.
+    return (
+      <div aria-busy="true">
+        <span className="fb-skel" style={{ display: 'block', width: '9rem', marginBottom: '1rem' }} />
+        <div className="fb-page__header">
+          <div>
+            <span className="fb-skel" style={{ display: 'block', width: '16rem', height: '1.6rem' }} />
+            <span
+              className="fb-skel"
+              style={{ display: 'block', width: '22rem', maxWidth: '100%', marginTop: '0.6rem' }}
+            />
+          </div>
+        </div>
+        <StatSkeleton count={5} style={{ marginBottom: '1.35rem' }} />
+        <CardSkeleton height="14rem" />
+      </div>
+    )
+  }
   if (notFound) {
     return (
       <div className="fb-empty">
@@ -68,23 +87,22 @@ export default function ReconciliationDetailPage() {
   if (!recon) return null
 
   const account = recon.bank_account
-  const committed = (recon.import_batches ?? []).filter((b) => b.status === 'committed').length
+  // Numbered so the order of work is obvious: checks → statement → match → review.
   const tabs = [
-    { key: 'imports', label: 'Imports', badge: committed || null },
-    { key: 'matching', label: 'Matching' },
-    { key: 'items', label: 'Reconciling Items' },
-    { key: 'brs', label: 'BRS' },
-    { key: 'schedules', label: 'Schedules' },
-    { key: 'workflow', label: 'Workflow' },
+    { key: 'checks', label: '1. Checks Issued' },
+    { key: 'statement', label: '2. Bank Statement' },
+    { key: 'matching', label: '3. Matching' },
+    { key: 'items', label: '4. Reconciling Items' },
+    { key: 'brs', label: '5. BRS' },
+    { key: 'schedules', label: '6. Schedules' },
+    { key: 'workflow', label: '7. Workflow' },
   ]
 
   const cards = [
     { label: 'Unadjusted book', value: money(recon.unadjusted_book_balance) },
     { label: 'Unadjusted bank', value: money(recon.unadjusted_bank_balance) },
-    {
-      label: 'Adjusted (book / bank)',
-      value: `${money(recon.adjusted_book_balance)} / ${money(recon.adjusted_bank_balance)}`,
-    },
+    { label: 'Adjusted book', value: money(recon.adjusted_book_balance) },
+    { label: 'Adjusted bank', value: money(recon.adjusted_bank_balance) },
     { label: 'Difference', value: money(recon.difference), danger: Number(recon.difference) !== 0 },
   ]
 
@@ -104,11 +122,11 @@ export default function ReconciliationDetailPage() {
         actions={<Badge tone={STATUS_TONE[recon.status] ?? 'slate'}>{recon.status_label}</Badge>}
       />
 
-      <div className="fb-stats" style={{ marginBottom: '1.35rem' }}>
+      <div className="fb-stats fb-reveal" style={{ marginBottom: '1.35rem' }}>
         {cards.map((c) => (
           <div key={c.label} className="fb-stat">
             <span className="fb-stat__label">{c.label}</span>
-            <span className={`fb-stat__value${c.danger ? ' fb-stat__value--danger' : ''}`} style={{ fontSize: '1.15rem' }}>
+            <span className={`fb-stat__value fb-stat__value--money${c.danger ? ' fb-stat__value--danger' : ''}`}>
               {c.value}
             </span>
           </div>
@@ -118,7 +136,10 @@ export default function ReconciliationDetailPage() {
       <Tabs tabs={tabs} active={tab} onChange={setTab} />
 
       <div style={{ marginTop: '1.35rem' }}>
-        {tab === 'imports' && <ImportsTab reconciliation={recon} onChanged={load} />}
+        {tab === 'checks' && <ChecksTab reconciliation={recon} onChanged={load} />}
+        {tab === 'statement' && (
+          <BankStatementTab reconciliation={recon} onChanged={load} onOpenMatching={() => setTab('matching')} />
+        )}
         {tab === 'matching' && <MatchingTab reconciliation={recon} onChanged={load} />}
         {tab === 'items' && <ReconcilingItemsTab reconciliation={recon} onChanged={load} />}
         {tab === 'brs' && <BrsTab reconciliation={recon} onChanged={load} />}

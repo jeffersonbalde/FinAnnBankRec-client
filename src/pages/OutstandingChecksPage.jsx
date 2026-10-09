@@ -1,19 +1,18 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FiSearch } from 'react-icons/fi'
-import api from '../lib/api'
+import { Link } from 'react-router-dom'
+import { FiDownload, FiSearch } from 'react-icons/fi'
+import api, { apiBaseUrl } from '../lib/api'
 import { money, shortDate } from '../lib/format'
 import PageHeader from '../components/PageHeader'
 import DataTable from '../components/ui/DataTable'
 import Pagination from '../components/ui/Pagination'
+import { StatSkeleton } from '../components/ui/Skeletons'
 import Badge from '../components/ui/Badge'
 import SearchableSelect from '../components/ui/SearchableSelect'
+import { bankAccountOptions } from '../lib/options'
 import { Select } from '../components/ui/Field'
 
 const PER_PAGE_OPTIONS = [10, 25, 50]
-
-function accountTriggerLabel(a) {
-  return `${a.bank_short_name || a.bank_name} · ${a.account_number} · ${a.fund_cluster}`
-}
 
 export default function OutstandingChecksPage() {
   const [rows, setRows] = useState([])
@@ -29,8 +28,9 @@ export default function OutstandingChecksPage() {
   const [perPage, setPerPage] = useState(10)
 
   useEffect(() => {
+    // The picker endpoint (not master data) so every role gets the account filter.
     api
-      .get('/bank-accounts', { params: { active_only: true } })
+      .get('/check-register/bank-accounts')
       .then(({ data }) => setAccounts(data.data ?? []))
       .catch(() => setAccounts([]))
   }, [])
@@ -60,63 +60,55 @@ export default function OutstandingChecksPage() {
         setRows(data.data)
         setMeta(data.meta ?? null)
         setSummary(data.summary)
+        // Removing the last rows of the last page leaves it empty — step back to a page that has rows.
+        if (data.data.length === 0 && data.meta && page > data.meta.last_page && data.meta.last_page >= 1) {
+          setPage(data.meta.last_page)
+        }
       })
       .finally(() => setLoading(false))
   }, [status, bankAccountId, debouncedSearch, page, perPage])
 
-  const accountOptions = useMemo(
-    () => [
-      {
-        value: '',
-        label: 'All bank accounts',
-        displayLabel: 'All bank accounts',
-        keywords: 'all',
-      },
-      ...accounts.map((a) => ({
-        value: a.id,
-        label: `${a.bank_short_name || a.bank_name} · ${a.account_number}`,
-        meta: `${a.fund_cluster}${a.entity_name ? ` — ${a.entity_name}` : ''}`,
-        displayLabel: accountTriggerLabel(a),
-        keywords: `${a.bank_name} ${a.bank_short_name} ${a.account_number} ${a.fund_cluster} ${a.entity_name || ''}`,
-      })),
-    ],
-    [accounts],
-  )
+  const accountOptions = useMemo(() => bankAccountOptions(accounts, { allLabel: 'All bank accounts' }), [accounts])
 
   const startIndex = meta ? (meta.current_page - 1) * meta.per_page : 0
   const hasFilters = Boolean(status || bankAccountId || debouncedSearch)
 
-  const columns = useMemo(
-    () => [
-      {
-        key: 'num',
-        header: '#',
-        className: 'fb-table__index',
-        render: (_r, i) => startIndex + i + 1,
-      },
-      { key: 'check_date', header: 'Date', render: (r) => shortDate(r.check_date) },
-      { key: 'serial_no', header: 'Check/ADA No.', className: 'fb-table__num' },
-      { key: 'payee', header: 'Payee' },
-      { key: 'bank_account', header: 'Bank account' },
-      { key: 'fund_cluster', header: 'Fund' },
-      {
-        key: 'days_outstanding',
-        header: 'Age',
-        render: (r) => (
-          <span style={r.days_outstanding > 180 ? { fontWeight: 600, color: 'var(--danger)' } : undefined}>
-            {r.days_outstanding != null ? `${r.days_outstanding} d` : '—'}
-          </span>
-        ),
-      },
-      {
-        key: 'status',
-        header: 'Status',
-        render: (r) => <Badge tone={r.is_stale ? 'red' : 'slate'}>{r.is_stale ? 'Stale' : 'Outstanding'}</Badge>,
-      },
-      { key: 'amount', header: 'Amount', className: 'fb-table__num', render: (r) => money(r.amount) },
-    ],
-    [startIndex],
-  )
+  // The Excel file follows the same filters as the table.
+  const exportParams = new URLSearchParams({
+    ...(status && { status }),
+    ...(bankAccountId && { bank_account_id: bankAccountId }),
+    ...(debouncedSearch && { search: debouncedSearch }),
+  }).toString()
+  const exportHref = `${apiBaseUrl}/outstanding-checks/export.xlsx${exportParams ? `?${exportParams}` : ''}`
+
+  const columns = [
+    {
+      key: 'num',
+      header: '#',
+      className: 'fb-table__index',
+      render: (_r, i) => startIndex + i + 1,
+    },
+    { key: 'check_date', header: 'Date', render: (r) => shortDate(r.check_date) },
+    { key: 'serial_no', header: 'Check/ADA No.', className: 'fb-table__num' },
+    { key: 'payee', header: 'Payee' },
+    { key: 'bank_account', header: 'Bank account' },
+    { key: 'fund_cluster', header: 'Fund' },
+    {
+      key: 'days_outstanding',
+      header: 'Age',
+      render: (r) => (
+        <span style={r.days_outstanding > 180 ? { fontWeight: 600, color: 'var(--danger)' } : undefined}>
+          {r.days_outstanding != null ? `${r.days_outstanding} d` : '—'}
+        </span>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (r) => <Badge tone={r.is_stale ? 'red' : 'slate'}>{r.is_stale ? 'Stale' : 'Outstanding'}</Badge>,
+    },
+    { key: 'amount', header: 'Amount', className: 'fb-table__num', render: (r) => money(r.amount) },
+  ]
 
   const stats = summary
     ? [
@@ -130,15 +122,30 @@ export default function OutstandingChecksPage() {
     <div>
       <PageHeader
         title="Outstanding Checks Register"
-        subtitle="Issued checks not yet cleared by the bank, across all periods."
+        subtitle="Checks not yet cleared by the bank."
+        actions={
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <a className="fb-btn fb-btn--ghost" href={exportHref}>
+              <FiDownload size={15} /> Export to Excel
+            </a>
+            <Link className="fb-btn fb-btn--ghost" to="/checks-register">
+              Open Checks Register
+            </Link>
+          </div>
+        }
       />
 
+      {!summary && loading && <StatSkeleton count={3} style={{ marginBottom: '1.35rem' }} />}
       {summary && (
-        <div className="fb-stats" style={{ marginBottom: '1.35rem' }}>
+        <div className="fb-stats fb-reveal" style={{ marginBottom: '1.35rem' }}>
           {stats.map((s) => (
             <div key={s.label} className="fb-stat">
               <span className="fb-stat__label">{s.label}</span>
-              <span className={`fb-stat__value${s.danger ? ' fb-stat__value--danger' : ''}`}>{s.value}</span>
+              <span
+                className={`fb-stat__value${typeof s.value === 'string' ? ' fb-stat__value--money' : ''}${s.danger ? ' fb-stat__value--danger' : ''}`}
+              >
+                {s.value}
+              </span>
             </div>
           ))}
         </div>
@@ -179,7 +186,9 @@ export default function OutstandingChecksPage() {
 
         <span className="fb-toolbar__spacer" />
 
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--muted)' }}>
+        <label
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--muted)' }}
+        >
           Rows
           <Select value={perPage} onChange={(e) => setPerPage(Number(e.target.value))} style={{ width: '5rem' }}>
             {PER_PAGE_OPTIONS.map((n) => (

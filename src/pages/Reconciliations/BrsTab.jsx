@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FiCheckCircle, FiAlertCircle, FiDownload, FiEdit3 } from 'react-icons/fi'
-import api, { extractErrorMessage } from '../../lib/api'
+import api, { apiBaseUrl, extractErrorMessage } from '../../lib/api'
 import { notifyError, notifySuccess } from '../../lib/toast'
 import { money } from '../../lib/format'
 import { useAuth } from '../../context/AuthContext'
 import { ROLES } from '../../lib/roles'
-import { FullPageSpinner } from '../../components/Spinner'
+import { CardSkeleton } from '../../components/ui/Skeletons'
 import Button from '../../components/ui/Button'
+import MoneyInput from '../../components/ui/MoneyInput'
 
 function Row({ label, agency, bank, comment, bold, indent }) {
   return (
@@ -67,14 +68,14 @@ export default function BrsTab({ reconciliation, onChanged }) {
     }
   }
 
-  if (loading) return <FullPageSpinner />
+  if (loading) return <CardSkeleton height="16rem" />
   if (error) return <div className="fb-alert fb-alert--danger">{error}</div>
   if (!data) return null
 
   const { brs, reconciliation: meta, signatories } = data
   const editable =
     reconciliation.is_editable && [ROLES.FINANCIAL_ANALYST, ROLES.ADMIN].includes(user.role)
-  const base = `/api/v1/reconciliations/${reconciliation.id}/export`
+  const base = `${apiBaseUrl}/reconciliations/${reconciliation.id}/export`
 
   return (
     <div>
@@ -124,23 +125,23 @@ export default function BrsTab({ reconciliation, onChanged }) {
               <tr className="fb-brs__bold">
                 <td>Unadjusted Balances</td>
                 <td className="fb-brs__num">
-                  <input
-                    type="number"
-                    step="0.01"
+                  <MoneyInput
+                    allowNegative
+                    required
+                    aria-label="Unadjusted book balance"
                     value={edit.book}
-                    onChange={(e) => setEdit({ ...edit, book: e.target.value })}
-                    className="form-control"
-                    style={{ width: '9rem', display: 'inline-block', textAlign: 'right' }}
+                    onChange={(book) => setEdit({ ...edit, book })}
+                    style={{ width: '14rem', display: 'inline-block', textAlign: 'right' }}
                   />
                 </td>
                 <td className="fb-brs__num">
-                  <input
-                    type="number"
-                    step="0.01"
+                  <MoneyInput
+                    allowNegative
+                    required
+                    aria-label="Unadjusted bank balance"
                     value={edit.bank}
-                    onChange={(e) => setEdit({ ...edit, bank: e.target.value })}
-                    className="form-control"
-                    style={{ width: '9rem', display: 'inline-block', textAlign: 'right' }}
+                    onChange={(bank) => setEdit({ ...edit, bank })}
+                    style={{ width: '14rem', display: 'inline-block', textAlign: 'right' }}
                   />
                 </td>
                 <td>

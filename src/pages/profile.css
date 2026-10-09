@@ -95,3 +95,19 @@
     max-width: 14rem;
   }
 }
+
+.fb-profile__photo-btn {
+  width: 100%;
+  max-width: 17rem;
+  height: auto;
+}
+
+.fb-profile__photo-btn .fb-profile__photo {
+  max-width: none;
+}
+
+@media (max-width: 767.98px) {
+  .fb-profile__photo-btn {
+    max-width: 14rem;
+  }
+}

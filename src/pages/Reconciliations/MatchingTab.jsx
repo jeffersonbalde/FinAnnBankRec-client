@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { FiZap, FiAlertTriangle } from 'react-icons/fi'
+import { FiZap, FiAlertTriangle, FiSearch } from 'react-icons/fi'
 import api from '../../lib/api'
 import { notifyError, notifySuccess } from '../../lib/toast'
 import { fbConfirm } from '../../lib/confirm'
@@ -8,7 +8,7 @@ import { useAuth } from '../../context/AuthContext'
 import { useRegisterModalDirty } from '../../context/ModalDirtyContext'
 import { useConfirmClose } from '../../hooks/useConfirmClose'
 import { ROLES } from '../../lib/roles'
-import { FullPageSpinner } from '../../components/Spinner'
+import { CardSkeleton } from '../../components/ui/Skeletons'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import Modal from '../../components/ui/Modal'
@@ -25,6 +25,7 @@ export default function MatchingTab({ reconciliation, onChanged }) {
   const [loading, setLoading] = useState(true)
   const [running, setRunning] = useState(false)
   const [linking, setLinking] = useState(null)
+  const [linkSearch, setLinkSearch] = useState('')
   const [cancelling, setCancelling] = useState(null)
   const [reason, setReason] = useState('')
   const [cancelBusy, setCancelBusy] = useState(false)
@@ -113,12 +114,20 @@ export default function MatchingTab({ reconciliation, onChanged }) {
     }
   }
 
-  if (loading) return <FullPageSpinner />
+  if (loading) return <CardSkeleton height="16rem" />
 
   const checks = board?.checks ?? []
   const txns = board?.bank_transactions ?? []
   const flags = board?.flags ?? []
   const outstandingChecks = checks.filter((c) => c.status === 'outstanding' || c.status === 'stale')
+  const linkQuery = linkSearch.trim().toLowerCase()
+  const linkableChecks = linkQuery
+    ? outstandingChecks.filter((c) =>
+        `${c.serial_no} ${c.payee} ${c.amount} ${Number(c.amount).toLocaleString('en-PH', { minimumFractionDigits: 2 })}`
+          .toLowerCase()
+          .includes(linkQuery),
+      )
+    : outstandingChecks
   const editable = reconciliation.is_editable
 
   return (
@@ -165,6 +174,11 @@ export default function MatchingTab({ reconciliation, onChanged }) {
                     <td>
                       <div style={{ fontWeight: 600, color: 'var(--ink)' }}>{c.serial_no}</div>
                       <div style={{ fontSize: '0.72rem', color: 'var(--muted)' }}>{c.payee}</div>
+                      {c.reconciliation_id != null && c.reconciliation_id !== reconciliation.id && (
+                        <div style={{ fontSize: '0.72rem', color: 'var(--fb-blue-dark)' }}>
+                          Carried over{c.origin_period_label ? ` — issued ${c.origin_period_label}` : ''}, still uncashed
+                        </div>
+                      )}
                       {c.status === 'cancelled' && c.cancelled_reason && (
                         <div style={{ fontSize: '0.72rem', color: 'var(--warn)' }}>Cancelled — {c.cancelled_reason}</div>
                       )}
@@ -193,7 +207,7 @@ export default function MatchingTab({ reconciliation, onChanged }) {
                 {checks.length === 0 && (
                   <tr>
                     <td colSpan={4} style={{ textAlign: 'center', padding: '2rem', color: 'var(--faint)' }}>
-                      Import the Report of Checks Issued first.
+                      No checks yet — record them in the Checks Register first (see step 1).
                     </td>
                   </tr>
                 )}
@@ -222,7 +236,14 @@ export default function MatchingTab({ reconciliation, onChanged }) {
                     <td className="fb-mini-table__actions">
                       {t.match_status === 'unmatched' ? (
                         t.derived_type === 'check_clearing' && isAnalyst && editable ? (
-                          <button type="button" className="fb-btn fb-btn--link fb-btn--sm" onClick={() => setLinking(t)}>
+                          <button
+                            type="button"
+                            className="fb-btn fb-btn--link fb-btn--sm"
+                            onClick={() => {
+                              setLinkSearch('')
+                              setLinking(t)
+                            }}
+                          >
                             Link
                           </button>
                         ) : (
@@ -249,7 +270,7 @@ export default function MatchingTab({ reconciliation, onChanged }) {
                 {txns.length === 0 && (
                   <tr>
                     <td colSpan={4} style={{ textAlign: 'center', padding: '2rem', color: 'var(--faint)' }}>
-                      Import the bank statement first.
+                      Upload the bank statement in step 2 (Bank Statement) first.
                     </td>
                   </tr>
                 )}
@@ -265,10 +286,21 @@ export default function MatchingTab({ reconciliation, onChanged }) {
         title={`Link bank check ${linking?.check_no || ''}`}
       >
         <p style={{ marginBottom: '0.75rem', fontSize: '0.875rem', color: 'var(--muted)' }}>
-          Choose the issued check this bank transaction settles.
+          Choose the issued check this bank transaction settles. Search by check number, payee or amount.
         </p>
+        <div className="fb-toolbar__search" style={{ marginBottom: '0.6rem', maxWidth: 'none' }}>
+          <FiSearch size={15} />
+          <input
+            className="form-control"
+            type="search"
+            placeholder="Search check no., payee, amount…"
+            value={linkSearch}
+            onChange={(e) => setLinkSearch(e.target.value)}
+            autoFocus
+          />
+        </div>
         <div style={{ maxHeight: '18rem', overflow: 'auto', display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-          {outstandingChecks.map((c) => (
+          {linkableChecks.map((c) => (
             <button
               key={c.id}
               type="button"
@@ -277,12 +309,19 @@ export default function MatchingTab({ reconciliation, onChanged }) {
             >
               <span>
                 <strong>{c.serial_no}</strong> · {c.payee}
+                {c.reconciliation_id != null && c.reconciliation_id !== reconciliation.id && (
+                  <span style={{ display: 'block', fontSize: '0.72rem', color: 'var(--fb-blue-dark)' }}>
+                    Carried over{c.origin_period_label ? ` — issued ${c.origin_period_label}` : ''}
+                  </span>
+                )}
               </span>
               <span className="fb-brs__num">{money(c.amount)}</span>
             </button>
           ))}
-          {outstandingChecks.length === 0 && (
-            <p style={{ fontSize: '0.875rem', color: 'var(--faint)' }}>No outstanding checks to link.</p>
+          {linkableChecks.length === 0 && (
+            <p style={{ fontSize: '0.875rem', color: 'var(--faint)' }}>
+              {outstandingChecks.length === 0 ? 'No outstanding checks to link.' : 'No checks match your search.'}
+            </p>
           )}
         </div>
       </Modal>

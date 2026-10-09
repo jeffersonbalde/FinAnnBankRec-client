@@ -6,7 +6,9 @@ import clsx from 'clsx'
  * Searchable combobox. Use overlayPanel for a centered modal-style picker
  * (same pattern as WPDS FlatSearchSelect).
  *
- * @param {{ value: string|number, label: string, meta?: string, displayLabel?: string, keywords?: string }[]} options
+ * An option may carry leading (a node, e.g. a profile picture) shown before its text.
+ *
+ * @param {{ value: string|number, label: string, meta?: string, displayLabel?: string, keywords?: string, leading?: import('react').ReactNode }[]} options
  */
 export default function SearchableSelect({
   options = [],
@@ -30,10 +32,7 @@ export default function SearchableSelect({
   const [query, setQuery] = useState('')
   const [highlight, setHighlight] = useState(0)
 
-  const selected = useMemo(
-    () => options.find((o) => String(o.value) === String(value)) || null,
-    [options, value],
-  )
+  const selected = useMemo(() => options.find((o) => String(o.value) === String(value)) || null, [options, value])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
@@ -132,8 +131,9 @@ export default function SearchableSelect({
         aria-controls={listId}
         aria-required={required || undefined}
       >
-        <span className={clsx('fb-combobox__value', !selected && 'is-placeholder')}>
-          {selected ? (selected.displayLabel || selected.label) : placeholder}
+        <span className={clsx('fb-combobox__value', !selected && 'is-placeholder', selected?.leading && 'has-lead')}>
+          {selected?.leading}
+          {selected ? selected.displayLabel || selected.label : placeholder}
         </span>
         <FiChevronDown size={16} className="fb-combobox__chevron" aria-hidden />
       </button>
@@ -145,19 +145,11 @@ export default function SearchableSelect({
       ) : null}
 
       {open ? (
-        <div
-          className={clsx('fb-combobox__panel', overlayPanel && 'fb-combobox__panel--overlay')}
-          role="presentation"
-        >
+        <div className={clsx('fb-combobox__panel', overlayPanel && 'fb-combobox__panel--overlay')} role="presentation">
           {overlayPanel ? (
             <div className="fb-combobox__head">
               <span className="fb-combobox__head-title">{panelTitle}</span>
-              <button
-                type="button"
-                className="fb-combobox__head-close"
-                onClick={closePanel}
-                aria-label="Close"
-              >
+              <button type="button" className="fb-combobox__head-close" onClick={closePanel} aria-label="Close">
                 <FiX size={16} />
               </button>
             </div>
@@ -209,14 +201,27 @@ export default function SearchableSelect({
                       aria-selected={active}
                       className={clsx(
                         'fb-combobox__option',
+                        opt.leading && 'has-lead',
                         active && 'is-active',
                         hot && 'is-highlight',
                       )}
                       onMouseEnter={() => setHighlight(idx)}
                       onClick={() => pick(opt)}
                     >
-                      <span className="fb-combobox__option-label">{opt.label}</span>
-                      {opt.meta ? <span className="fb-combobox__option-meta">{opt.meta}</span> : null}
+                      {opt.leading ? (
+                        <>
+                          {opt.leading}
+                          <span className="fb-combobox__option-text">
+                            <span className="fb-combobox__option-label">{opt.label}</span>
+                            {opt.meta ? <span className="fb-combobox__option-meta">{opt.meta}</span> : null}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="fb-combobox__option-label">{opt.label}</span>
+                          {opt.meta ? <span className="fb-combobox__option-meta">{opt.meta}</span> : null}
+                        </>
+                      )}
                     </button>
                   </li>
                 )

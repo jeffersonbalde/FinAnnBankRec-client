@@ -5,12 +5,14 @@ import ErrorBoundary from './components/ErrorBoundary'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import MasterDataPage from './pages/MasterData/MasterDataPage'
+import ChecksRegisterPage from './pages/ChecksRegisterPage'
 import ReconciliationsPage from './pages/Reconciliations/ReconciliationsPage'
 import ReconciliationDetailPage from './pages/Reconciliations/ReconciliationDetailPage'
 import NotificationsPage from './pages/NotificationsPage'
 import OutstandingChecksPage from './pages/OutstandingChecksPage'
 import BackupSecurityPage from './pages/BackupSecurityPage'
 import AuditTrailPage from './pages/AuditTrailPage'
+import MyActivityPage from './pages/MyActivityPage'
 import ProfilePage from './pages/ProfilePage'
 import NotFoundPage from './pages/NotFoundPage'
 import { ROLES } from './lib/roles'
@@ -39,6 +41,7 @@ export default function App() {
                 />
               }
             >
+              <Route path="checks-register" element={<ChecksRegisterPage />} />
               <Route path="reconciliations" element={<ReconciliationsPage />} />
               <Route path="reconciliations/:id" element={<ReconciliationDetailPage />} />
             </Route>
@@ -51,6 +54,7 @@ export default function App() {
               }
             >
               <Route path="profile" element={<ProfilePage />} />
+              <Route path="my-activity" element={<MyActivityPage />} />
             </Route>
 
             <Route element={<ProtectedRoute roles={[ROLES.ADMIN]} />}>

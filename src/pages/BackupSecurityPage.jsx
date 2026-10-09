@@ -9,13 +9,29 @@ import {
   FiEye,
   FiEyeOff,
   FiSave,
+  FiFolder,
+  FiInfo,
 } from 'react-icons/fi'
 import PageHeader from '../components/PageHeader'
 import Tabs from '../components/ui/Tabs'
 import Button from '../components/ui/Button'
 import DataTable from '../components/ui/DataTable'
 import { Field, TextInput, Select } from '../components/ui/Field'
-import { FullPageSpinner } from '../components/Spinner'
+import FolderPickerModal from '../components/FolderPickerModal'
+import FolderChoiceModal from '../components/FolderChoiceModal'
+import useFolderChoice from '../hooks/useFolderChoice'
+import {
+  SYNCED_EVENT,
+  allowFolder,
+  folderPermission,
+  getSavedFolder,
+  isLocalFolderSupported,
+  lastSyncedAt,
+  syncLocalBackups,
+} from '../lib/localBackup'
+import { BulkBar, selectColumn, selectedRowClass } from '../components/ui/RowSelect'
+import { useRowSelection } from '../hooks/useRowSelection'
+import { bulkRemove } from '../lib/bulk'
 import { useAuth } from '../context/AuthContext'
 import api from '../lib/api'
 import { fbConfirm } from '../lib/confirm'
@@ -36,6 +52,11 @@ const WEEKDAYS = [
   { value: 5, label: 'Friday' },
   { value: 6, label: 'Saturday' },
 ]
+
+// How long to keep backup files. 0 = never delete.
+const KEEP_OPTIONS = [7, 14, 30, 60, 90, 180, 365, 0]
+
+const keepLabel = (days) => (days === 0 ? 'Never delete (keep all backups)' : `${days} days`)
 
 const emptySchedule = {
   enabled: true,
@@ -114,6 +135,7 @@ export default function BackupSecurityPage() {
   const [loading, setLoading] = useState(true)
   const [working, setWorking] = useState(false)
   const [deletingName, setDeletingName] = useState(null)
+  const [bulkBusy, setBulkBusy] = useState(false)
 
   const [currentPassword, setCurrentPassword] = useState('')
   const [password, setPassword] = useState('')
@@ -122,6 +144,16 @@ export default function BackupSecurityPage() {
   const [pwErrors, setPwErrors] = useState({})
   const [scheduleForm, setScheduleForm] = useState(emptySchedule)
   const [scheduleSaving, setScheduleSaving] = useState(false)
+  // Where backups are kept now (and the built-in folder), as reported by the server.
+  const [folder, setFolder] = useState(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
+  const [folderSaving, setFolderSaving] = useState(false)
+  // The folder on THIS computer picked with the browser's own folder window.
+  const [localFolder, setLocalFolder] = useState(null)
+  const [localAccess, setLocalAccess] = useState('none') // none | granted | prompt | denied
+  const [localSyncedAt, setLocalSyncedAt] = useState(null)
+  const [localBusy, setLocalBusy] = useState(false)
+  const localSupported = isLocalFolderSupported()
 
   const pwMismatch =
     passwordConfirmation.length > 0 && password !== passwordConfirmation
@@ -152,6 +184,7 @@ export default function BackupSecurityPage() {
       const files = backupsRes.data?.data || []
       setBackups(files.filter((f) => f.format === 'sql'))
       applySchedule(statusRes.data?.backup?.schedule || backupsRes.data?.schedule)
+      setFolder(backupsRes.data?.folder || statusRes.data?.backup?.folder || null)
     } catch (err) {
       notifyError(err, 'Failed to load backup tools.')
     } finally {
@@ -162,6 +195,61 @@ export default function BackupSecurityPage() {
   useEffect(() => {
     load()
   }, [load])
+
+  const refreshLocal = useCallback(async () => {
+    const handle = await getSavedFolder()
+    setLocalFolder(handle)
+    setLocalAccess(handle ? await folderPermission(handle) : 'none')
+    setLocalSyncedAt(lastSyncedAt())
+  }, [])
+
+  useEffect(() => {
+    refreshLocal()
+    window.addEventListener(SYNCED_EVENT, refreshLocal)
+    return () => window.removeEventListener(SYNCED_EVENT, refreshLocal)
+  }, [refreshLocal])
+
+  const afterChoice = useCallback(() => {
+    load()
+    refreshLocal()
+  }, [load, refreshLocal])
+  const folderChoice = useFolderChoice({ existingCount: backups.length, onDone: afterChoice })
+
+  async function runLocalCopy(announce = true) {
+    setLocalBusy(true)
+    try {
+      const result = await syncLocalBackups()
+      await refreshLocal()
+      if (!announce) return
+      if (result.failed > 0) {
+        notifyError(null, `${result.failed} backup${result.failed === 1 ? '' : 's'} could not be copied to your folder.`)
+      } else {
+        notifySuccess(
+          result.copied > 0
+            ? `${result.copied} backup${result.copied === 1 ? '' : 's'} copied to your folder.`
+            : 'Your folder already has every backup.',
+        )
+      }
+    } catch (err) {
+      notifyError(err, 'Failed to copy backups to your folder.')
+    } finally {
+      setLocalBusy(false)
+    }
+  }
+
+  async function allowLocalFolder() {
+    if (!localFolder) return
+    const state = await allowFolder(localFolder)
+    await refreshLocal()
+    if (state === 'granted') await runLocalCopy(false)
+  }
+
+  // One button: the computer's own folder window where the browser supports it,
+  // otherwise the in-app list of the server's folders.
+  function changeFolder() {
+    if (localSupported) folderChoice.start()
+    else setPickerOpen(true)
+  }
 
   async function createBackup() {
     setWorking(true)
@@ -192,6 +280,7 @@ export default function BackupSecurityPage() {
       const { data } = await api.put('/system/backup-schedule', payload)
       notifySuccess(data.message || 'Schedule saved.')
       applySchedule(data.schedule)
+      if (data.folder) setFolder(data.folder)
       await load()
     } catch (err) {
       notifyError(err, 'Failed to save backup schedule.')
@@ -246,32 +335,12 @@ export default function BackupSecurityPage() {
     try {
       await api.delete(`/system/backups/${encodeURIComponent(name)}`)
       notifySuccess('Backup deleted.')
+      selection.clear()
       await load()
     } catch (err) {
       notifyError(err, 'Failed to delete backup.')
     } finally {
       setDeletingName(null)
-    }
-  }
-
-  async function clearActivityData() {
-    const ok = await fbConfirm({
-      title: 'Clear all reconciliation data?',
-      text: 'Deletes every reconciliation, imported check and bank transaction, notification and audit entry. Users, bank accounts and UACS codes are kept. A backup is saved first.',
-      confirmText: 'Clear data',
-      danger: true,
-    })
-    if (!ok) return
-
-    setWorking(true)
-    try {
-      const { data } = await api.delete('/system/activity-data', { data: { confirm: 'CLEAR' } })
-      notifySuccess(data.message || 'Reconciliation data cleared.')
-      await load()
-    } catch (err) {
-      notifyError(err, 'Failed to clear reconciliation data.')
-    } finally {
-      setWorking(false)
     }
   }
 
@@ -300,7 +369,49 @@ export default function BackupSecurityPage() {
 
   const backupMeta = status?.backup || {}
 
+  async function saveFolder(directory, move = false) {
+    setFolderSaving(true)
+    try {
+      const { data } = await api.put('/system/backup-folder', { directory, move_existing: move })
+      notifySuccess(data.message || 'Backup folder saved.')
+      setPickerOpen(false)
+      if (data.folder) setFolder(data.folder)
+      await load()
+    } catch (err) {
+      notifyError(err, 'Failed to save the backup folder.')
+    } finally {
+      setFolderSaving(false)
+    }
+  }
+
+  const folderLabel = folder?.path || backupMeta.directory || '—'
+
+  // The table rows are the SQL backups; a file's name is its id.
+  const rows = backups.map((f) => ({ ...f, id: f.name }))
+  const selection = useRowSelection(folderLabel, 500)
+
+  function removePicked() {
+    return bulkRemove({
+      url: '/system/backups/bulk-delete',
+      ids: selection.list.map((r) => r.id),
+      noun: 'backup',
+      text: 'The selected backup files will be permanently deleted from the server. This cannot be undone.',
+      setBusy: setBulkBusy,
+      onDone: async () => {
+        selection.clear()
+        await load()
+      },
+    })
+  }
+
   const columns = [
+    selectColumn(selection, rows, () => true),
+    {
+      key: 'num',
+      header: '#',
+      className: 'fb-table__index',
+      render: (_file, i) => i + 1,
+    },
     {
       key: 'actions',
       header: 'Actions',
@@ -311,7 +422,7 @@ export default function BackupSecurityPage() {
           </Button>
           <Button
             size="sm"
-            variant="ghost"
+            variant="secondary"
             onClick={() => deleteFile(file.name)}
             disabled={deletingName === file.name || working}
           >
@@ -342,7 +453,7 @@ export default function BackupSecurityPage() {
     <div className="fb-bk">
       <PageHeader
         title="Backup & Security"
-        subtitle="Create SQL database backups, review stored files, and update your administrator password."
+        subtitle="Create SQL database backups, choose where they are saved, and update your administrator password."
         actions={
           <Button variant="secondary" onClick={load} disabled={loading || working}>
             <FiRefreshCw size={15} className={loading ? 'fb-bk__spin' : undefined} />
@@ -374,7 +485,7 @@ export default function BackupSecurityPage() {
                     <div>
                       <span className="fb-bk__meta-label">Schedule</span>
                       <span className="fb-bk__meta-value">
-                        {loading ? '…' : scheduleForm.label || (scheduleForm.enabled ? 'Configured' : 'Disabled')}
+                        {loading ? <span className="fb-skel fb-skel--meta" /> : scheduleForm.label || (scheduleForm.enabled ? 'Configured' : 'Disabled')}
                       </span>
                     </div>
                   </div>
@@ -383,7 +494,7 @@ export default function BackupSecurityPage() {
                     <div>
                       <span className="fb-bk__meta-label">Next automatic backup</span>
                       <span className="fb-bk__meta-value">
-                        {loading ? '…' : formatWhen(scheduleForm.next_run_at)}
+                        {loading ? <span className="fb-skel fb-skel--meta" /> : formatWhen(scheduleForm.next_run_at)}
                       </span>
                     </div>
                   </div>
@@ -393,7 +504,7 @@ export default function BackupSecurityPage() {
                       <span className="fb-bk__meta-label">Latest SQL backup</span>
                       <span className="fb-bk__meta-value">
                         {loading
-                          ? '…'
+                          ? <span className="fb-skel fb-skel--meta" />
                           : backupMeta.latest?.name
                             ? `${backupMeta.latest.name} · ${formatWhen(backupMeta.latest.generated_at)}`
                             : 'None yet'}
@@ -401,6 +512,56 @@ export default function BackupSecurityPage() {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="fb-bk__panel">
+              <div className="fb-bk__panel-head">Backup location</div>
+              <div className="fb-bk__panel-body">
+                <div className="fb-bk__location">
+                  <span className="fb-bk__location-icon">
+                    <FiFolder size={20} />
+                  </span>
+                  <div className="fb-bk__location-text">
+                    <span className="fb-bk__meta-label">
+                      Backups are saved in
+                      {!loading && !localFolder && folder?.is_default && <span className="fb-bk__tag">Default folder</span>}
+                      {localFolder && localAccess === 'granted' && <span className="fb-bk__tag">On</span>}
+                      {localFolder && localAccess !== 'granted' && (
+                        <span className="fb-bk__tag fb-bk__tag--warn">Needs permission</span>
+                      )}
+                    </span>
+                    <span className="fb-bk__location-path" title={localFolder ? localFolder.name : folderLabel}>
+                      {localFolder ? localFolder.name : loading ? <span className="fb-skel fb-skel--meta" /> : folderLabel}
+                    </span>
+                    {localFolder && (
+                      <span className="fb-bk__hint">
+                        Every backup is saved here automatically while you are signed in
+                        {localSyncedAt ? `. Last saved: ${formatWhen(localSyncedAt)}` : ''}. A safety copy also stays on the
+                        server.
+                      </span>
+                    )}
+                  </div>
+                  <div className="fb-bk__location-actions">
+                    <Button variant="secondary" onClick={changeFolder} disabled={loading || folderSaving || localBusy}>
+                      <FiFolder size={15} /> Change folder
+                    </Button>
+                    {localFolder && localAccess === 'granted' && (
+                      <Button variant="ghost" onClick={() => runLocalCopy(true)} loading={localBusy}>
+                        Copy now
+                      </Button>
+                    )}
+                  </div>
+                </div>
+                {localFolder && localAccess !== 'granted' && localSupported && (
+                  <div className="fb-alert fb-alert--info fb-bk__allow">
+                    <span>Your browser needs your OK again before it can save files in this folder.</span>
+                    <Button size="sm" onClick={allowLocalFolder}>
+                      Allow access
+                    </Button>
+                  </div>
+                )}
+                {folder?.problem && <div className="fb-alert fb-alert--danger">{folder.problem}</div>}
               </div>
             </div>
 
@@ -452,28 +613,41 @@ export default function BackupSecurityPage() {
                         required
                       />
                     </Field>
-                    <Field label="Keep files (days)">
-                      <TextInput
-                        type="number"
-                        min={0}
-                        max={3650}
+                    <Field label="Delete backups older than">
+                      <Select
                         value={scheduleForm.retention_days}
-                        onChange={(e) =>
-                          setScheduleForm((s) => ({
-                            ...s,
-                            retention_days: e.target.value === '' ? 0 : Number(e.target.value),
-                          }))
-                        }
-                      />
+                        onChange={(e) => setScheduleForm((s) => ({ ...s, retention_days: Number(e.target.value) }))}
+                      >
+                        {[...new Set([...KEEP_OPTIONS, scheduleForm.retention_days])]
+                          .sort((x, y) => (x === 0 ? 1 : y === 0 ? -1 : x - y))
+                          .map((days) => (
+                            <option key={days} value={days}>
+                              {keepLabel(days)}
+                            </option>
+                          ))}
+                      </Select>
                     </Field>
                   </div>
-                  <div className="fb-bk__schedule-foot">
-                    <span className="fb-bk__hint">
-                      Last auto run: {formatWhen(scheduleForm.last_run_at)}
-                      {scheduleForm.retention_days === 0
-                        ? ' · Keep all files'
-                        : ` · Delete after ${scheduleForm.retention_days} days`}
+
+                  <div className="fb-bk__note">
+                    <FiInfo size={16} />
+                    <span>
+                      {scheduleForm.retention_days === 0 ? (
+                        <>
+                          Old backups are <strong>never deleted automatically</strong>. They stay until you delete them
+                          yourself from the list below.
+                        </>
+                      ) : (
+                        <>
+                          Each time a new backup is made, backups <strong>older than {scheduleForm.retention_days} days are
+                          deleted automatically</strong> to save space. Newer backups are never touched.
+                        </>
+                      )}
                     </span>
+                  </div>
+
+                  <div className="fb-bk__schedule-foot">
+                    <span className="fb-bk__hint">Last automatic backup: {formatWhen(scheduleForm.last_run_at)}</span>
                     <Button type="submit" loading={scheduleSaving} disabled={loading}>
                       <FiSave size={15} /> Save schedule
                     </Button>
@@ -482,33 +656,36 @@ export default function BackupSecurityPage() {
               </div>
             </div>
 
-            {loading ? (
-              <FullPageSpinner />
-            ) : (
-              <DataTable
-                columns={columns}
-                rows={backups}
-                empty="No backup files on the server yet. Create or download a SQL backup to begin."
-                rowKey="name"
-                footer={
-                  <span className="fb-bk__hint">
-                    {backups.length} SQL backup{backups.length === 1 ? '' : 's'} on server
-                  </span>
-                }
-              />
-            )}
+            <DataTable
+              columns={columns}
+              rows={rows}
+              head={<BulkBar count={selection.count} onClear={selection.clear} onAction={removePicked} busy={bulkBusy} />}
+              rowClassName={selectedRowClass(selection)}
+              loading={loading}
+              empty="No backup files on the server yet. Create or download a SQL backup to begin."
+              rowKey="name"
+              footer={
+                !loading && (
+                  <div className="fb-pager">
+                    <span className="fb-pager__meta fb-bk__tablefoot">
+                      <strong>{backups.length}</strong> SQL backup{backups.length === 1 ? '' : 's'} saved in{' '}
+                      <span className="fb-bk__tablefoot-path">{folderLabel}</span>
+                    </span>
+                  </div>
+                )
+              }
+            />
 
-            <div className="fb-bk__panel">
-              <div className="fb-bk__panel-head">Start with a clean slate</div>
-              <div className="fb-bk__panel-body">
-                <div className="fb-bk__actions">
-                  <Button variant="danger" onClick={clearActivityData} disabled={working}>
-                    <FiTrash2 size={15} /> Clear reconciliation data
-                  </Button>
-                </div>
-              </div>
-            </div>
+            <FolderChoiceModal modal={folderChoice.modal} onClose={folderChoice.close} onRetry={folderChoice.start} />
 
+            <FolderPickerModal
+              open={pickerOpen}
+              onClose={() => setPickerOpen(false)}
+              startPath={folder?.path}
+              existingCount={backups.length}
+              saving={folderSaving}
+              onSelect={(path, { move }) => saveFolder(path, move)}
+            />
           </div>
         )}
 

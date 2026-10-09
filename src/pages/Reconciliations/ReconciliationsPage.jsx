@@ -2,12 +2,15 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { FiPlus, FiSearch } from 'react-icons/fi'
 import { useResource } from '../../hooks/useResource'
+import { useRowSelection } from '../../hooks/useRowSelection'
+import { bulkRemove } from '../../lib/bulk'
 import { useAuth } from '../../context/AuthContext'
 import { ROLES } from '../../lib/roles'
 import { money, shortDate } from '../../lib/format'
 import PageHeader from '../../components/PageHeader'
 import DataTable from '../../components/ui/DataTable'
 import Pagination from '../../components/ui/Pagination'
+import { BulkBar, selectColumn, selectedRowClass } from '../../components/ui/RowSelect'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import { Select } from '../../components/ui/Field'
@@ -33,6 +36,7 @@ export default function ReconciliationsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [status, setStatus] = useState('')
   const [creating, setCreating] = useState(false)
+  const [bulkBusy, setBulkBusy] = useState(false)
 
   // Debounce the search box so we don't fire a request per keystroke.
   useEffect(() => {
@@ -57,7 +61,29 @@ export default function ReconciliationsPage() {
 
   const startIndex = meta ? (meta.current_page - 1) * meta.per_page : 0
 
+  // Removing the last rows of the last page leaves it empty: step back to a page that has rows.
+  if (!loading && items.length === 0 && meta && page > meta.last_page && meta.last_page >= 1) setPage(meta.last_page)
+
+  // Only a Draft or Returned reconciliation can still be removed, and only by those who prepare them.
+  const selection = useRowSelection(JSON.stringify({ debouncedSearch, status }), 100)
+  const isSelectable = (r) => canCreate && r.is_editable
+
+  function removePicked() {
+    return bulkRemove({
+      url: '/reconciliations/bulk-delete',
+      ids: selection.list.map((r) => r.id),
+      noun: 'reconciliation',
+      text: 'Their statement rows, reconciling items and uploaded files are removed too. The checks stay in the Checks Register. Certified and For Review ones are never removed. This cannot be undone.',
+      setBusy: setBulkBusy,
+      onDone: async () => {
+        selection.clear()
+        await reload()
+      },
+    })
+  }
+
   const columns = [
+    ...(canCreate ? [selectColumn(selection, items, isSelectable)] : []),
     {
       key: 'num',
       header: '#',
@@ -93,9 +119,7 @@ export default function ReconciliationsPage() {
       header: 'Difference',
       className: 'fb-table__num',
       render: (r) => (
-        <span style={{ color: Number(r.difference) === 0 ? 'var(--ok)' : 'var(--danger)' }}>
-          {money(r.difference)}
-        </span>
+        <span style={{ color: Number(r.difference) === 0 ? 'var(--ok)' : 'var(--danger)' }}>{money(r.difference)}</span>
       ),
     },
     {
@@ -144,7 +168,9 @@ export default function ReconciliationsPage() {
           <option value="returned">Returned</option>
         </Select>
         <span className="fb-toolbar__spacer" />
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--muted)' }}>
+        <label
+          style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--muted)' }}
+        >
           Rows
           <Select value={perPage} onChange={(e) => setPerPage(Number(e.target.value))} style={{ width: '5rem' }}>
             {PER_PAGE_OPTIONS.map((n) => (
@@ -159,6 +185,8 @@ export default function ReconciliationsPage() {
       <DataTable
         columns={columns}
         rows={items}
+        head={<BulkBar count={selection.count} onClear={selection.clear} onAction={removePicked} busy={bulkBusy} />}
+        rowClassName={selectedRowClass(selection)}
         loading={loading}
         empty={
           debouncedSearch || status

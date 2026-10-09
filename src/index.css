@@ -101,7 +101,12 @@ a {
   color: var(--fb-blue);
   text-decoration: none;
 }
-a:hover {
+/*
+ * Hover colour for plain text links only. :where() keeps this at the same weight as `a` itself, so
+ * any component that sets its own colour (buttons made from links, sidebar links…) keeps it on hover
+ * instead of turning blue — blue on a blue or navy background hides the label.
+ */
+a:where(:hover) {
   color: var(--fb-blue-dark);
 }
 

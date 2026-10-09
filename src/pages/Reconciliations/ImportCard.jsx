@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { FiUploadCloud } from 'react-icons/fi'
 import api, { extractErrorMessage } from '../../lib/api'
 import { notifySuccess } from '../../lib/toast'
+import { fbConfirm } from '../../lib/confirm'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import { money, shortDate } from '../../lib/format'
@@ -32,6 +33,8 @@ export default function ImportCard({
   committedBatch,
   disabled,
   readOnlyReason,
+  replaceNote,
+  removeNote,
   onChanged,
 }) {
   const inputRef = useRef(null)
@@ -66,7 +69,7 @@ export default function ImportCard({
     setError('')
     try {
       await api.post(`/imports/${preview.id}/commit`)
-      notifySuccess(`${title.split(' (')[0]} imported.`)
+      notifySuccess(`${title.split(' (')[0]} ${committedBatch ? 'replaced' : 'imported'}.`)
       setPreview(null)
       onChanged()
     } catch (err) {
@@ -74,6 +77,29 @@ export default function ImportCard({
     } finally {
       setBusy(false)
     }
+  }
+
+  // Replacing or removing a file that is already imported changes what has been matched, so say so first.
+  async function replace() {
+    if (replaceNote) {
+      const ok = await fbConfirm({
+        title: `Replace the ${title.split(' (')[0].toLowerCase()}?`,
+        text: replaceNote,
+        confirmText: 'Choose a new file',
+      })
+      if (!ok) return
+    }
+    inputRef.current?.click()
+  }
+
+  async function remove(batchId) {
+    const ok = await fbConfirm({
+      title: `Remove the ${title.split(' (')[0].toLowerCase()}?`,
+      text: removeNote ?? 'The rows from this file are removed.',
+      confirmText: 'Remove',
+      danger: true,
+    })
+    if (ok) await discard(batchId)
   }
 
   async function discard(batchId) {
@@ -115,13 +141,13 @@ export default function ImportCard({
             </p>
             {!disabled && (
               <div className="mt-2 flex gap-2">
-                <Button variant="secondary" onClick={() => inputRef.current?.click()} loading={busy}>
+                <Button variant="secondary" onClick={replace} loading={busy}>
                   Replace
                 </Button>
                 <Button
                   variant="ghost"
                   style={{ color: 'var(--danger)' }}
-                  onClick={() => discard(committedBatch.id)}
+                  onClick={() => remove(committedBatch.id)}
                 >
                   Remove
                 </Button>
@@ -216,7 +242,7 @@ export default function ImportCard({
 
             <div className="mt-3 flex gap-2">
               <Button onClick={commit} loading={busy} disabled={preview.valid_count === 0}>
-                Commit {preview.valid_count} rows
+                {committedBatch ? `Replace with ${preview.valid_count} rows` : `Commit ${preview.valid_count} rows`}
               </Button>
               <Button variant="secondary" onClick={() => discard(preview.id)} disabled={busy}>
                 Discard

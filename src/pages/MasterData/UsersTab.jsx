@@ -11,9 +11,10 @@ import { useConfirmClose } from '../../hooks/useConfirmClose'
 import Pagination from '../../components/ui/Pagination'
 import Button from '../../components/ui/Button'
 import Modal from '../../components/ui/Modal'
+import PhotoViewerModal, { PhotoButton } from '../../components/PhotoViewerModal'
 import { Field, TextInput, Select } from '../../components/ui/Field'
 import { ActiveBadge } from '../../components/ui/Badge'
-import { FullPageSpinner } from '../../components/Spinner'
+import { UserGridSkeleton } from '../../components/ui/Skeletons'
 import api from '../../lib/api'
 import './users.css'
 
@@ -112,6 +113,7 @@ export default function UsersTab() {
   })
 
   const [editing, setEditing] = useState(null)
+  const [viewingPhoto, setViewingPhoto] = useState(null) // { url, name } | null
   const [form, setForm] = useState(BLANK)
   const [initialForm, setInitialForm] = useState(BLANK)
   const [formError, setFormError] = useState('')
@@ -341,7 +343,7 @@ export default function UsersTab() {
         </div>
       )}
 
-      {loading && <FullPageSpinner />}
+      {loading && <UserGridSkeleton />}
 
       {!loading && items.length === 0 && (
         <div className="fb-empty">
@@ -354,7 +356,13 @@ export default function UsersTab() {
           {items.map((u) => (
             <article key={u.id} className={`fb-user-card${!u.is_active ? ' is-inactive' : ''}`}>
               <div className="fb-user-card__photo">
-                <UserAvatar user={u} size="lg" />
+                {u.avatar_url ? (
+                  <PhotoButton name={u.name} onOpen={() => setViewingPhoto({ id: u.id, url: u.avatar_url, name: u.name })}>
+                    <UserAvatar user={u} size="lg" />
+                  </PhotoButton>
+                ) : (
+                  <UserAvatar user={u} size="lg" />
+                )}
               </div>
               <div className="fb-user-card__body">
                 <div className="fb-user-card__meta">
@@ -399,6 +407,8 @@ export default function UsersTab() {
       )}
 
       {!loading && <Pagination meta={meta} onPageChange={setPage} />}
+
+      <PhotoViewerModal photo={viewingPhoto} onClose={() => setViewingPhoto(null)} />
 
       <Modal
         open={!!editing}

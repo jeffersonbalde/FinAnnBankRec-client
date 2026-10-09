@@ -1,3 +1,143 @@
+/* Filters: a single compact toolbar row (period, date range, bank account) */
+.dash-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem 0.75rem;
+  margin-bottom: 1.1rem;
+}
+.dash-filter__account {
+  flex: 1 1 13rem;
+  min-width: 11rem;
+  max-width: 20rem;
+}
+.dash-filter__error {
+  margin: -0.5rem 0 1rem;
+  font-size: 0.82rem;
+  color: var(--danger);
+}
+
+/* Period: one joined segmented control */
+.dash-seg {
+  display: inline-flex;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+}
+.dash-seg__btn {
+  height: calc(2.25rem - 2px);
+  padding: 0 0.62rem;
+  border: 0;
+  border-right: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--ink-soft);
+  font-size: 0.82rem;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background 0.15s var(--ease),
+    color 0.15s var(--ease);
+}
+.dash-seg__btn:last-child {
+  border-right: 0;
+}
+.dash-seg__btn:hover {
+  background: var(--fb-blue-soft);
+  color: var(--fb-blue-dark);
+}
+.dash-seg__btn.is-active {
+  background: var(--fb-blue);
+  color: #fff;
+}
+
+/* Date range: two dates in one bordered box */
+.dash-daterange {
+  display: inline-flex;
+  align-items: center;
+  height: 2.25rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  padding: 0 0.3rem;
+}
+.dash-daterange:focus-within {
+  border-color: var(--fb-blue);
+  box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--fb-blue) 18%, transparent);
+}
+.dash-daterange.is-invalid {
+  border-color: var(--danger);
+}
+.dash-daterange input {
+  width: 7.9rem;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 0 0.35rem;
+}
+.dash-daterange__sep {
+  flex-shrink: 0;
+  color: var(--faint);
+}
+
+.dash-filter__reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 2.25rem;
+  padding: 0 0.4rem;
+  border: 0;
+  background: none;
+  color: var(--fb-blue);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.dash-filter__reset:hover {
+  color: var(--fb-blue-dark);
+  text-decoration: underline;
+}
+
+@media (max-width: 767.98px) {
+  .dash-seg {
+    flex: 1 1 100%;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .dash-seg__btn {
+    border-bottom: 1px solid var(--border-strong);
+  }
+  .dash-seg__btn:nth-child(3n) {
+    border-right: 0;
+  }
+  .dash-seg__btn:nth-last-child(-n + 3) {
+    border-bottom: 0;
+  }
+  .dash-daterange {
+    flex: 1 1 100%;
+  }
+  .dash-daterange input {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+  .dash-filter__account {
+    flex: 1 1 100%;
+    max-width: none;
+  }
+}.dash-body {
+  transition: opacity 0.15s var(--ease);
+}
+.dash-body.is-refreshing {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
 .dash-grid {
   margin-top: 1.25rem;
   display: grid;
@@ -42,26 +182,24 @@
 }
 .dash-fund__row {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.25rem 0.5rem;
 }
+/* Wrap rather than cut off — the fund, account and difference must all stay readable. */
 .dash-fund__name {
   font-weight: 700;
   font-size: 0.875rem;
   color: var(--ink);
   min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .dash-fund__meta {
   margin: 0.15rem 0 0;
   font-size: 0.72rem;
   color: var(--muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .dash-fund__none {
   font-size: 0.75rem;

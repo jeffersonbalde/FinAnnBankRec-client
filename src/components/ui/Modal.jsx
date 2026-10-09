@@ -5,7 +5,12 @@ import { FiX } from 'react-icons/fi'
 // both 0.2s) so the modal stays mounted for the close transition to play.
 const CLOSE_MS = 200
 
-export default function Modal({ open, onClose, title, icon, size = 'md', children }) {
+/**
+ * `footer` (optional) is pinned under the scrolling body, so action buttons stay
+ * put while a long form scrolls. Put the submit button there with
+ * `form="<form id>"` so it still submits the form inside the body.
+ */
+export default function Modal({ open, onClose, title, icon, size = 'md', footer, children }) {
   const [rendered, setRendered] = useState(open)
   const [closing, setClosing] = useState(false)
   const timeoutRef = useRef(null)
@@ -56,6 +61,7 @@ export default function Modal({ open, onClose, title, icon, size = 'md', childre
           </button>
         </div>
         <div className="fb-modal__body">{children}</div>
+        {footer && <div className="fb-modal__foot">{footer}</div>}
       </div>
     </div>
   )

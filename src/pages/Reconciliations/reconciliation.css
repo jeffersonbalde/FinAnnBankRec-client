@@ -228,6 +228,142 @@
   color: var(--danger);
 }
 
+/* Checks Issued tab */
+.fb-help {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  max-width: 60rem;
+}
+.fb-toolbar__date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+.fb-toolbar__date .form-control {
+  width: 9.5rem;
+}
+.fb-table__nowrap {
+  white-space: nowrap;
+}
+.fb-table__mono {
+  font-family: ui-monospace, monospace;
+  white-space: nowrap;
+}
+/* Check form — sectioned layout */
+.fb-checkform {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.fb-checkform__section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.fb-checkform__section-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  border-radius: var(--radius) var(--radius) 0 0;
+}
+.fb-checkform__icon {
+  display: grid;
+  place-items: center;
+  width: 1.7rem;
+  height: 1.7rem;
+  border-radius: 0.4rem;
+  background: var(--fb-blue-soft);
+  color: var(--fb-blue);
+}
+.fb-checkform__section-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.fb-checkform__section-hint {
+  margin-left: auto;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.fb-checkform__section-body {
+  padding: 0.9rem 1rem 0.2rem;
+}
+.fb-money {
+  position: relative;
+}
+.fb-money__sign {
+  position: absolute;
+  left: 0.8rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 600;
+  color: var(--muted);
+  pointer-events: none;
+}
+.fb-money .form-control {
+  padding-left: 1.9rem;
+}
+
+.fb-check-form__more {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0.15rem 0 0.85rem;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--fb-blue);
+  cursor: pointer;
+}
+.fb-check-form__more:hover {
+  color: var(--fb-blue-dark);
+}
+.fb-check-form__extra {
+  padding: 0.85rem 1rem 0.1rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+/* Check form grid */
+.fb-check-form__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 0.85rem;
+}
+@media (max-width: 640px) {
+  .fb-check-form__grid {
+    grid-template-columns: 1fr;
+  }
+}
+.fb-check-form__fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.fb-check-form__fieldset:disabled .form-control,
+.fb-check-form__fieldset:disabled .form-select {
+  background: var(--surface-2);
+  color: var(--ink-soft);
+}
+.fb-check-form__remove {
+  margin-right: auto;
+}
+
 .fb-sig {
   margin-top: 2rem;
   display: grid;

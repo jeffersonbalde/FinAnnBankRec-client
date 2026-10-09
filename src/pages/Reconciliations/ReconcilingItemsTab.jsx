@@ -8,11 +8,12 @@ import { useAuth } from '../../context/AuthContext'
 import { useRegisterModalDirty } from '../../context/ModalDirtyContext'
 import { useConfirmClose } from '../../hooks/useConfirmClose'
 import { ROLES } from '../../lib/roles'
-import { FullPageSpinner } from '../../components/Spinner'
+import { CardSkeleton } from '../../components/ui/Skeletons'
 import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import Modal from '../../components/ui/Modal'
 import { Field, TextInput, Select } from '../../components/ui/Field'
+import MoneyInput from '../../components/ui/MoneyInput'
 
 const MANUAL_CATEGORIES = [
   ['error_understating_bank', 'Error — understates bank balance (+ bank)'],
@@ -164,7 +165,7 @@ export default function ReconcilingItemsTab({ reconciliation, onChanged }) {
     }
   }
 
-  if (loading) return <FullPageSpinner />
+  if (loading) return <CardSkeleton height="16rem" />
 
   const editable =
     reconciliation.is_editable && [ROLES.FINANCIAL_ANALYST, ROLES.ADMIN].includes(user.role)
@@ -231,11 +232,13 @@ export default function ReconcilingItemsTab({ reconciliation, onChanged }) {
             </Select>
           </Field>
           <Field label="Amount" error={fieldErrors.amount?.[0]}>
-            <TextInput
-              type="number"
-              step="0.01"
+            <MoneyInput
+              prefix
+              positive
               value={form.amount}
-              onChange={(e) => setForm({ ...form, amount: e.target.value })}
+              onChange={(amount) => setForm({ ...form, amount })}
+              placeholder="0.00"
+              error={!!fieldErrors.amount?.[0]}
               required
             />
           </Field>

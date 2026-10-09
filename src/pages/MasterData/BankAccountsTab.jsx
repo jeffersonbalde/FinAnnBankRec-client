@@ -4,7 +4,7 @@ import { useResource } from '../../hooks/useResource'
 import { extractErrorMessage } from '../../lib/api'
 import api from '../../lib/api'
 import { notifyError, notifySuccess } from '../../lib/toast'
-import { fbConfirm } from '../../lib/confirm'
+import { fbAlert, fbConfirm } from '../../lib/confirm'
 import { useRegisterModalDirty } from '../../context/ModalDirtyContext'
 import { useConfirmClose } from '../../hooks/useConfirmClose'
 import DataTable from '../../components/ui/DataTable'
@@ -138,6 +138,14 @@ export default function BankAccountsTab() {
   }
 
   async function remove(row) {
+    // Check first, so nobody confirms a delete that the system would refuse (or that would wipe real records).
+    if (row.deletable === false) {
+      await fbAlert(
+        'This account cannot be deleted',
+        `${row.account_number} has reconciliations or checks recorded against it. Deactivate it instead (Edit, then untick Active) to keep that history.`,
+      )
+      return
+    }
     const ok = await fbConfirm({
       title: 'Delete bank account?',
       text: `${row.account_number} — its signatories are removed too. This cannot be undone.`,
@@ -150,7 +158,10 @@ export default function BankAccountsTab() {
       notifySuccess('Bank account deleted.')
       await reload()
     } catch (err) {
-      notifyError(err)
+      // The server refuses an account that has records: say why in a dialog, not a passing toast.
+      if (err?.response?.status === 422) await fbAlert('This account cannot be deleted', extractErrorMessage(err))
+      else notifyError(err)
+      await reload()
     }
   }
 

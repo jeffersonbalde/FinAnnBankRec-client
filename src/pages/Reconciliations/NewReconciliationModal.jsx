@@ -8,6 +8,7 @@ import { useConfirmClose } from '../../hooks/useConfirmClose'
 import Modal from '../../components/ui/Modal'
 import Button from '../../components/ui/Button'
 import SearchableSelect from '../../components/ui/SearchableSelect'
+import { bankAccountOptions } from '../../lib/options'
 import { Field, TextInput, Select } from '../../components/ui/Field'
 
 const BLANK_FORM = {
@@ -27,10 +28,6 @@ function lastDayOfMonth(dateStr) {
   return `${last.getFullYear()}-${pad(last.getMonth() + 1)}-${pad(last.getDate())}`
 }
 
-function accountTriggerLabel(a) {
-  return `${a.bank_short_name || a.bank_name} · ${a.account_number} · ${a.fund_cluster}`
-}
-
 export default function NewReconciliationModal({ open, onClose }) {
   const navigate = useNavigate()
   const [accounts, setAccounts] = useState([])
@@ -44,17 +41,7 @@ export default function NewReconciliationModal({ open, onClose }) {
   useRegisterModalDirty(isDirty)
   const requestClose = useConfirmClose(isDirty, onClose)
 
-  const accountOptions = useMemo(
-    () =>
-      accounts.map((a) => ({
-        value: a.id,
-        label: `${a.bank_short_name || a.bank_name} · ${a.account_number}`,
-        meta: `${a.fund_cluster}${a.entity_name ? ` — ${a.entity_name}` : ''}`,
-        displayLabel: accountTriggerLabel(a),
-        keywords: `${a.bank_name} ${a.bank_short_name} ${a.account_number} ${a.account_name} ${a.fund_cluster} ${a.entity_name || ''}`,
-      })),
-    [accounts],
-  )
+  const accountOptions = useMemo(() => bankAccountOptions(accounts), [accounts])
 
   useEffect(() => {
     if (!open) return

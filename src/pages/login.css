@@ -40,9 +40,9 @@
 }
 .fb-login__brand-mark {
   display: block;
-  width: 76px;
-  height: 76px;
-  object-fit: contain;
+  width: 88px;
+  height: 88px;
+  object-fit: cover;
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
@@ -50,21 +50,37 @@
 }
 .fb-login__brand-title {
   font-family: var(--font-display);
-  font-size: 2rem;
+  font-size: 2.6rem;
   font-weight: 800;
-  line-height: 1.15;
+  line-height: 1.05;
+  letter-spacing: 0.02em;
+}
+.fb-login__brand-full {
+  margin-top: 0.55rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #fff;
+}
+.fb-login__brand-rule {
+  width: 100%;
+  max-width: 16rem;
+  margin: 1.15rem 0 1rem;
+  border: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.35);
 }
 .fb-login__brand-tag {
-  margin-top: 0.65rem;
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.82);
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.88);
   line-height: 1.5;
 }
-.fb-login__brand-foot {
-  position: relative;
-  margin-top: 2.5rem;
-  font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.6);
+.fb-login__brand-quote {
+  margin: 0.7rem 0 0;
+  font-size: 0.92rem;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.45;
 }
 
 /* ---- Right form panel ---- */
@@ -81,11 +97,51 @@
 }
 .fb-login__mark-sm {
   display: block;
-  width: 52px;
-  height: 52px;
-  object-fit: contain;
+  width: 72px;
+  height: 72px;
+  object-fit: cover;
   border-radius: 50%;
-  margin: 0 auto 1rem;
+  margin: 0 auto 0.75rem;
+  background: #fff;
+}
+.fb-login__identity {
+  text-align: center;
+  margin-bottom: 1.35rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+.fb-login__identity-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.65rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  line-height: 1.1;
+}
+.fb-login__identity-full {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  line-height: 1.35;
+}
+.fb-login__identity-rule {
+  width: 4.5rem;
+  margin: 0.7rem auto;
+  border: 0;
+  border-top: 1px solid var(--border-strong);
+}
+.fb-login__identity-tag,
+.fb-login__identity-quote {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+.fb-login__identity-quote {
+  margin-top: 0.35rem;
+  font-style: italic;
 }
 .fb-login__panel h1 {
   font-family: var(--font-display);
@@ -171,47 +227,6 @@
   }
 }
 
-/* ---- Demo chips ---- */
-.fb-login__demo {
-  margin-top: 1.5rem;
-  border-top: 1px solid var(--border);
-  padding-top: 1rem;
-}
-.fb-login__demo-label {
-  font-size: 0.72rem;
-  color: var(--faint);
-  margin-bottom: 0.5rem;
-}
-.fb-login__demo-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-.fb-login__demo-chip {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
-  border-radius: var(--radius-sm);
-  padding: 0.4rem 0.6rem;
-  font-size: 0.72rem;
-  color: var(--muted);
-  cursor: pointer;
-  transition:
-    border-color 0.15s var(--ease),
-    color 0.15s var(--ease),
-    transform 0.15s var(--ease);
-}
-.fb-login__demo-chip:hover {
-  border-color: var(--fb-blue);
-  color: var(--fb-blue-dark);
-  transform: translateX(2px);
-}
-.fb-login__demo-chip span:last-child {
-  color: var(--faint);
-}
-
 @media (min-width: 992px) {
   .fb-login {
     grid-template-columns: 54% 46%;
@@ -220,6 +235,9 @@
     display: flex;
   }
   .fb-login__mark-sm {
+    display: none;
+  }
+  .fb-login__identity {
     display: none;
   }
 }

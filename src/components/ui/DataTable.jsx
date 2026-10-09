@@ -1,10 +1,22 @@
 /**
  * @param {{ key: string, header: string, render?: (row, index: number) => any, className?: string }[]} columns
  * @param {import('react').ReactNode} [footer] - rendered inside the same card, below the table (e.g. a Pagination bar)
+ * @param {(row) => string | undefined} [rowClassName] - extra class for a row (e.g. "is-selected")
+ * @param {import('react').ReactNode} [head] - rendered inside the card, above the table (e.g. a bulk-action strip)
  */
-export default function DataTable({ columns, rows, loading, empty = 'No records yet.', rowKey = 'id', footer }) {
+export default function DataTable({
+  columns,
+  rows,
+  loading,
+  empty = 'No records yet.',
+  rowKey = 'id',
+  footer,
+  rowClassName,
+  head,
+}) {
   return (
     <div className="fb-table__wrap">
+      {head}
       <div className="fb-table__scroll">
         <table className="fb-table">
           <thead>
@@ -38,7 +50,7 @@ export default function DataTable({ columns, rows, loading, empty = 'No records 
 
             {!loading &&
               rows.map((row, i) => (
-                <tr key={row[rowKey]}>
+                <tr key={row[rowKey]} className={rowClassName?.(row)}>
                   {columns.map((col) => (
                     <td key={col.key} className={col.className}>
                       {col.render ? col.render(row, i) : row[col.key]}

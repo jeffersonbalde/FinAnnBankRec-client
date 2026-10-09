@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from 'react'
 import { FiDownload } from 'react-icons/fi'
-import api, { extractErrorMessage } from '../../lib/api'
+import api, { apiBaseUrl, extractErrorMessage } from '../../lib/api'
 import { money, shortDate } from '../../lib/format'
-import { FullPageSpinner } from '../../components/Spinner'
+import { CardSkeleton } from '../../components/ui/Skeletons'
 
 export default function SchedulesTab({ reconciliation }) {
   const [checks, setChecks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const base = `/api/v1/reconciliations/${reconciliation.id}/export`
+  const base = `${apiBaseUrl}/reconciliations/${reconciliation.id}/export`
 
   const load = useCallback(async () => {
     try {
@@ -26,7 +26,7 @@ export default function SchedulesTab({ reconciliation }) {
     load()
   }, [load])
 
-  if (loading) return <FullPageSpinner />
+  if (loading) return <CardSkeleton height="16rem" />
 
   const total = checks.reduce((sum, c) => sum + Number(c.amount), 0)
 
@@ -38,6 +38,9 @@ export default function SchedulesTab({ reconciliation }) {
         </a>
         <a className="fb-btn fb-btn--ghost" href={`${base}/schedule-1.xlsx`}>
           <FiDownload size={15} /> Schedule 1 (Excel)
+        </a>
+        <a className="fb-btn fb-btn--ghost" href={`${base}/rci.xlsx`}>
+          <FiDownload size={15} /> Report of Checks Issued (Excel)
         </a>
         <a className="fb-btn fb-btn--ghost" href={`${base}/brs.pdf`}>
           <FiDownload size={15} /> BRS + Schedule 1 (PDF)
@@ -52,6 +55,7 @@ export default function SchedulesTab({ reconciliation }) {
           <table className="fb-table">
             <thead>
               <tr>
+                <th className="fb-table__index">#</th>
                 <th>Payee</th>
                 <th>Date of Check</th>
                 <th>Check/ADA No.</th>
@@ -59,8 +63,9 @@ export default function SchedulesTab({ reconciliation }) {
               </tr>
             </thead>
             <tbody>
-              {checks.map((c) => (
+              {checks.map((c, i) => (
                 <tr key={c.id}>
+                  <td className="fb-table__index">{i + 1}</td>
                   <td>{c.payee}</td>
                   <td>{shortDate(c.check_date)}</td>
                   <td style={{ fontFamily: 'ui-monospace, monospace' }}>{c.serial_no}</td>
@@ -69,14 +74,14 @@ export default function SchedulesTab({ reconciliation }) {
               ))}
               {checks.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="fb-table__empty">
+                  <td colSpan={5} className="fb-table__empty">
                     No outstanding checks.
                   </td>
                 </tr>
               )}
               {checks.length > 0 && (
                 <tr className="fb-brs__bold">
-                  <td colSpan={3}>TOTAL</td>
+                  <td colSpan={4}>TOTAL</td>
                   <td className="fb-table__num">{money(total)}</td>
                 </tr>
               )}

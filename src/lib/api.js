@@ -16,6 +16,14 @@ const API_BASE = String(import.meta.env.VITE_LARAVEL_API ?? '/api/v1')
 // The Sanctum CSRF cookie lives on the API's origin, not under /api/v1.
 const API_ORIGIN = API_BASE.replace(/\/api\/v1$/, '')
 
+/**
+ * The API's base URL (origin + /api/v1), for building download links (<a href>)
+ * that must bypass axios — e.g. file exports. Using this instead of a
+ * hardcoded '/api/v1' keeps those links correct when the API isn't served
+ * from the same relative path as the app (see VITE_LARAVEL_API above).
+ */
+export const apiBaseUrl = API_BASE
+
 const api = axios.create({
   baseURL: API_BASE,
   withCredentials: true,

@@ -4,15 +4,8 @@ import { FiMail, FiLock, FiEye, FiEyeOff, FiArrowRight, FiAlertCircle } from 're
 import { useAuth } from '../context/AuthContext'
 import { extractErrorMessage } from '../lib/api'
 import { Spinner } from '../components/Spinner'
-import tesdaLogo from '../assets/tesda_logo.png'
+import fabresLogo from '../assets/fabres_logo.png'
 import './login.css'
-
-const DEMO_ACCOUNTS = [
-  ['admin@tesda.gov.ph', 'Administrator'],
-  ['analyst@tesda.gov.ph', 'Financial Analyst'],
-  ['disbursing@tesda.gov.ph', 'Disbursing Officer'],
-  ['budget@tesda.gov.ph', 'Budget Officer'],
-]
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -42,20 +35,27 @@ export default function LoginPage() {
     <div className="fb-login">
       <aside className="fb-login__brand" aria-hidden="true">
         <div className="fb-login__brand-inner">
-          <img src={tesdaLogo} alt="TESDA" className="fb-login__brand-mark" />
-          <p className="fb-login__brand-title">FinAnnBankRec</p>
-          <p className="fb-login__brand-tag">
-            Automated Bank Reconciliation System for TESDA &mdash; Misamis Occidental.
-          </p>
-          <p className="fb-login__brand-foot">Financial Analysis &amp; Bank Reconciliation Unit</p>
+          <img src={fabresLogo} alt="FABReS" className="fb-login__brand-mark" />
+          <p className="fb-login__brand-title">FABReS</p>
+          <p className="fb-login__brand-full">Financial Analyst Bank Reconciliation System</p>
+          <hr className="fb-login__brand-rule" />
+          <p className="fb-login__brand-tag">Automated Bank Reconciliation for TESDA</p>
+          <p className="fb-login__brand-quote">&ldquo;Making Reconciliation Easier and More Accurate.&rdquo;</p>
         </div>
       </aside>
 
       <section className="fb-login__panel">
         <div className="fb-login__panel-inner">
-          <img src={tesdaLogo} alt="TESDA" className="fb-login__mark-sm" />
+          <div className="fb-login__identity">
+            <img src={fabresLogo} alt="FABReS" className="fb-login__mark-sm" />
+            <p className="fb-login__identity-title">FABReS</p>
+            <p className="fb-login__identity-full">Financial Analyst Bank Reconciliation System</p>
+            <hr className="fb-login__identity-rule" />
+            <p className="fb-login__identity-tag">Automated Bank Reconciliation for TESDA</p>
+            <p className="fb-login__identity-quote">&ldquo;Making Reconciliation Easier and More Accurate.&rdquo;</p>
+          </div>
           <h1>Welcome back</h1>
-          <p className="fb-login__panel-sub">Sign in to continue to FinAnnBankRec.</p>
+          <p className="fb-login__panel-sub">Sign in to continue to FABReS.</p>
 
           <form className="fb-login__form" onSubmit={handleSubmit}>
             {error && (
@@ -107,28 +107,6 @@ export default function LoginPage() {
               {submitting ? <Spinner /> : <>Sign in <FiArrowRight size={16} /></>}
             </button>
           </form>
-
-          <div className="fb-login__demo">
-            <p className="fb-login__demo-label">
-              Demo accounts &mdash; password <code>password</code>
-            </p>
-            <div className="fb-login__demo-grid">
-              {DEMO_ACCOUNTS.map(([mail, label]) => (
-                <button
-                  key={mail}
-                  type="button"
-                  className="fb-login__demo-chip"
-                  onClick={() => {
-                    setEmail(mail)
-                    setPassword('password')
-                  }}
-                >
-                  <span>{label}</span>
-                  <span>{mail}</span>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
     </div>
