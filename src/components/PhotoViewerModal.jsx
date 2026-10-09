@@ -42,7 +42,14 @@ export default function PhotoViewerModal({ photo, onClose }) {
       link.remove()
       window.URL.revokeObjectURL(link.href)
     } catch (err) {
-      notifyError(err, 'The photo could not be downloaded.')
+      // The body of a failed download arrives as a Blob: read the server's message out of it.
+      let message = null
+      try {
+        message = JSON.parse(await err?.response?.data?.text?.())?.message ?? null
+      } catch {
+        // not JSON
+      }
+      notifyError(null, message || 'The photo could not be downloaded.')
     } finally {
       setDownloading(false)
     }
