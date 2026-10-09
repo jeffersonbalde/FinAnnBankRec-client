@@ -11,6 +11,9 @@ const PAGE = 10
  * that can be searched and shown a page at a time, so even hundreds of flags
  * stay readable.
  */
+// Flags saved by an older run carry the check number only inside their message ("Check 000123: books show…").
+const mismatchCheckNo = (f) => String(f.check_no ?? f.message?.match(/^Check (\S+?):/)?.[1] ?? '—')
+
 const GROUPS = [
   {
     type: 'unrecorded_check',
@@ -27,8 +30,8 @@ const GROUPS = [
     title: 'Amount in your books is not the amount the bank cleared',
     help: 'Correct the amount in the Report of Checks Issued if it was typed wrongly, then run auto-match.',
     columns: ['Check no.', 'Books', 'Bank', 'Difference'],
-    row: (f) => [f.check_no ?? '—', money(f.book_amount), money(f.bank_amount), money(f.difference)],
-    search: (f) => String(f.check_no ?? ''),
+    row: (f) => [mismatchCheckNo(f), money(f.book_amount), money(f.bank_amount), money(f.difference)],
+    search: (f) => mismatchCheckNo(f),
   },
 ]
 
