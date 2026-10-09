@@ -385,3 +385,74 @@
   font-size: 0.75rem;
   color: var(--muted);
 }
+
+/* What an imported file adds up to */
+.fb-import-totals {
+  margin: 0.5rem 0 0.75rem;
+}
+
+.fb-import-totals__tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  gap: 0.5rem;
+}
+
+.fb-import-totals__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm, 0.35rem);
+  background: var(--surface-2, #f8fafc);
+}
+
+.fb-import-totals__label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.fb-import-totals__value {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.fb-import-totals__ok,
+.fb-import-totals__warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.fb-import-totals__ok {
+  color: #15803d;
+}
+
+.fb-import-totals__warn {
+  color: #b45309;
+}
+
+.fb-import-totals svg {
+  flex: none;
+  margin-top: 0.15rem;
+}
+
+.fb-mini-table__total td {
+  position: sticky;
+  bottom: 0;
+  padding: 0.5rem 0.75rem;
+  border-top: 2px solid var(--border-strong, #cbd5e1);
+  background: var(--table-head-bg, #eef2f7);
+  font-weight: 700;
+  color: var(--ink);
+}

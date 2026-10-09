@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { FiUploadCloud } from 'react-icons/fi'
+import { FiAlertTriangle, FiCheckCircle, FiUploadCloud } from 'react-icons/fi'
 import api, { extractErrorMessage } from '../../lib/api'
 import { notifySuccess } from '../../lib/toast'
 import { fbConfirm } from '../../lib/confirm'
@@ -23,6 +23,49 @@ const PREVIEW_COLUMNS = {
     ['credit', 'Credit', (v) => money(v)],
     ['running_balance', 'Balance', (v) => money(v)],
   ],
+}
+
+/** What a file adds up to: how many rows, the totals, and for a bank statement the balances. */
+function Totals({ type, totals }) {
+  if (!totals) return null
+
+  const tiles =
+    type === 'rci'
+      ? [
+          ['Checks', totals.count],
+          ['Total amount', money(totals.total_amount)],
+        ]
+      : [
+          ['Transactions', totals.count],
+          ['Total debits', money(totals.total_debit)],
+          ['Total credits', money(totals.total_credit)],
+          ['Opening balance', totals.opening_balance == null ? '—' : money(totals.opening_balance)],
+          ['Ending balance', totals.ending_balance == null ? '—' : money(totals.ending_balance)],
+        ]
+
+  return (
+    <div className="fb-import-totals">
+      <div className="fb-import-totals__tiles">
+        {tiles.map(([label, value]) => (
+          <div className="fb-import-totals__tile" key={label}>
+            <span className="fb-import-totals__label">{label}</span>
+            <span className="fb-import-totals__value">{value}</span>
+          </div>
+        ))}
+      </div>
+      {type === 'bank_statement' && totals.adds_up === true && (
+        <p className="fb-import-totals__ok">
+          <FiCheckCircle size={14} /> Opening balance − debits + credits equals the ending balance.
+        </p>
+      )}
+      {type === 'bank_statement' && totals.adds_up === false && (
+        <p className="fb-import-totals__warn">
+          <FiAlertTriangle size={14} /> The balances in this file do not add up (opening − debits + credits is not the
+          ending balance). Please check that it is the complete statement.
+        </p>
+      )}
+    </div>
+  )
 }
 
 export default function ImportCard({
@@ -139,6 +182,7 @@ export default function ImportCard({
                 <span className="text-amber-600"> · {committedBatch.error_count} skipped</span>
               )}
             </p>
+            <Totals type={type} totals={committedBatch.totals} />
             {!disabled && (
               <div className="mt-2 flex gap-2">
                 <Button variant="secondary" onClick={replace} loading={busy}>
@@ -189,6 +233,8 @@ export default function ImportCard({
               </p>
             )}
 
+            <Totals type={type} totals={preview.totals} />
+
             <div className="fb-import-preview">
               <table className="fb-mini-table">
                 <thead>
@@ -224,6 +270,25 @@ export default function ImportCard({
                     </tr>
                   ))}
                 </tbody>
+                {preview.totals && (
+                  <tfoot>
+                    <tr className="fb-mini-table__total">
+                      <td colSpan={type === 'rci' ? columns.length : 4}>
+                        Total · {preview.totals.count} {type === 'rci' ? 'checks' : 'transactions'}
+                        {(preview.preview ?? []).length > 100 ? ' (all rows, not only the 100 shown)' : ''}
+                      </td>
+                      {type === 'rci' ? (
+                        <td className="fb-mini-table__num">{money(preview.totals.total_amount)}</td>
+                      ) : (
+                        <>
+                          <td className="fb-mini-table__num">{money(preview.totals.total_debit)}</td>
+                          <td className="fb-mini-table__num">{money(preview.totals.total_credit)}</td>
+                          <td />
+                        </>
+                      )}
+                    </tr>
+                  </tfoot>
+                )}
               </table>
             </div>
 
