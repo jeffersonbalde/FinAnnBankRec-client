@@ -456,3 +456,22 @@
   font-weight: 700;
   color: var(--ink);
 }
+
+.fb-import-account-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin: 0.5rem 0 0.75rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid #f1c27d;
+  border-radius: var(--radius-sm, 0.35rem);
+  background: #fff4e0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: #8a4b00;
+}
+
+.fb-import-account-warning svg {
+  flex: none;
+  margin-top: 0.15rem;
+}

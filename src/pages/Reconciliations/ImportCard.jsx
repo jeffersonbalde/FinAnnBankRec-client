@@ -25,6 +25,18 @@ const PREVIEW_COLUMNS = {
   ],
 }
 
+/** The file is for another bank account than this reconciliation: the commonest slip, so say it loudly. */
+function AccountWarning({ text }) {
+  if (!text) return null
+
+  return (
+    <div className="fb-import-account-warning" role="alert">
+      <FiAlertTriangle size={16} />
+      <span>{text}</span>
+    </div>
+  )
+}
+
 /** What a file adds up to: how many rows, the totals, and for a bank statement the balances. */
 function Totals({ type, totals }) {
   if (!totals) return null
@@ -182,6 +194,7 @@ export default function ImportCard({
                 <span className="text-amber-600"> · {committedBatch.error_count} skipped</span>
               )}
             </p>
+            <AccountWarning text={committedBatch.account_warning} />
             <Totals type={type} totals={committedBatch.totals} />
             {!disabled && (
               <div className="mt-2 flex gap-2">
@@ -233,6 +246,7 @@ export default function ImportCard({
               </p>
             )}
 
+            <AccountWarning text={preview.account_warning} />
             <Totals type={type} totals={preview.totals} />
 
             <div className="fb-import-preview">
