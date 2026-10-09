@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { FiZap, FiAlertTriangle, FiSearch } from 'react-icons/fi'
+import { FiZap, FiSearch } from 'react-icons/fi'
 import api from '../../lib/api'
 import { notifyError, notifySuccess } from '../../lib/toast'
 import { fbConfirm } from '../../lib/confirm'
@@ -13,6 +13,7 @@ import Button from '../../components/ui/Button'
 import Badge from '../../components/ui/Badge'
 import Modal from '../../components/ui/Modal'
 import { Field, TextInput } from '../../components/ui/Field'
+import FlagsPanel from './FlagsPanel'
 
 const CHECK_TONE = { cleared: 'green', outstanding: 'slate', stale: 'red', cancelled: 'amber' }
 
@@ -147,20 +148,7 @@ export default function MatchingTab({ reconciliation, onChanged }) {
         </span>
       </div>
 
-      {flags.length > 0 && (
-        <div className="fb-card" style={{ marginBottom: '1rem', borderColor: 'var(--warn)' }}>
-          <div className="fb-card__body" style={{ padding: '0.85rem 1rem' }}>
-            <p style={{ margin: 0, fontWeight: 700, color: 'var(--warn)', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <FiAlertTriangle size={15} /> Needs your attention
-            </p>
-            <ul style={{ margin: '0.4rem 0 0', paddingLeft: '1.1rem', fontSize: '0.85rem', color: 'var(--ink-soft)' }}>
-              {flags.map((f, i) => (
-                <li key={i}>{f.message}</li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+      <FlagsPanel flags={flags} />
 
       <div className="fb-two">
         <div className="fb-card">
