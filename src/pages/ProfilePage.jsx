@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import PageHeader from '../components/PageHeader'
 import PhotoViewerModal, { PhotoButton } from '../components/PhotoViewerModal'
+import usePhotoOk from '../hooks/usePhotoOk'
 import { useAuth } from '../context/AuthContext'
 import { shortDate } from '../lib/format'
 import { ROLE_LABELS } from '../lib/roles'
@@ -18,6 +19,7 @@ function initials(name = '') {
 export default function ProfilePage() {
   const { user } = useAuth()
   const [viewingPhoto, setViewingPhoto] = useState(null)
+  const photo = usePhotoOk(user.avatar_url)
 
   const details = [
     ['Full name', user.name],
@@ -34,13 +36,18 @@ export default function ProfilePage() {
 
       <div className="fb-profile__grid">
         <section className="fb-card fb-profile__identity">
-          {user.avatar_url ? (
+          {photo.ok ? (
             <PhotoButton
               name={user.name}
               className="fb-profile__photo-btn"
               onOpen={() => setViewingPhoto({ id: user.id, url: user.avatar_url, name: user.name })}
             >
-              <img src={user.avatar_url} alt={`Photo of ${user.name}`} className="fb-profile__photo" />
+              <img
+                src={user.avatar_url}
+                alt={`Photo of ${user.name}`}
+                className="fb-profile__photo"
+                onError={photo.onError}
+              />
             </PhotoButton>
           ) : (
             <span className="fb-profile__photo fb-profile__photo--fallback" aria-hidden="true">

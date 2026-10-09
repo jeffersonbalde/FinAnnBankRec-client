@@ -12,6 +12,7 @@ import Pagination from '../../components/ui/Pagination'
 import Button from '../../components/ui/Button'
 import Modal from '../../components/ui/Modal'
 import PhotoViewerModal, { PhotoButton } from '../../components/PhotoViewerModal'
+import usePhotoOk from '../../hooks/usePhotoOk'
 import { Field, TextInput, Select } from '../../components/ui/Field'
 import { ActiveBadge } from '../../components/ui/Badge'
 import { UserGridSkeleton } from '../../components/ui/Skeletons'
@@ -75,8 +76,10 @@ function PasswordField({ label, hint, error, required, value, onChange, autoComp
 }
 
 function UserAvatar({ user, size = 'md' }) {
-  if (user.avatar_url) {
-    return <img src={user.avatar_url} alt="" className={`fb-user-avatar fb-user-avatar--${size}`} />
+  const photo = usePhotoOk(user.avatar_url)
+
+  if (photo.ok) {
+    return <img src={user.avatar_url} alt="" className={`fb-user-avatar fb-user-avatar--${size}`} onError={photo.onError} />
   }
   const initials = (user.name || '?')
     .split(/\s+/)
@@ -84,6 +87,19 @@ function UserAvatar({ user, size = 'md' }) {
     .map((p) => p[0]?.toUpperCase() ?? '')
     .join('')
   return <span className={`fb-user-avatar fb-user-avatar--${size} fb-user-avatar--fallback`}>{initials || <FiUser size={18} />}</span>
+}
+
+/** The big picture on a user's card: opens the photo viewer, or shows initials when there is no usable photo. */
+function UserCardPhoto({ user, onOpen }) {
+  const photo = usePhotoOk(user.avatar_url)
+
+  if (!photo.ok) return <UserAvatar user={user} size="lg" />
+
+  return (
+    <PhotoButton name={user.name} onOpen={onOpen}>
+      <img src={user.avatar_url} alt="" className="fb-user-avatar fb-user-avatar--lg" onError={photo.onError} />
+    </PhotoButton>
+  )
 }
 
 export default function UsersTab() {
@@ -356,13 +372,7 @@ export default function UsersTab() {
           {items.map((u) => (
             <article key={u.id} className={`fb-user-card${!u.is_active ? ' is-inactive' : ''}`}>
               <div className="fb-user-card__photo">
-                {u.avatar_url ? (
-                  <PhotoButton name={u.name} onOpen={() => setViewingPhoto({ id: u.id, url: u.avatar_url, name: u.name })}>
-                    <UserAvatar user={u} size="lg" />
-                  </PhotoButton>
-                ) : (
-                  <UserAvatar user={u} size="lg" />
-                )}
+                <UserCardPhoto user={u} onOpen={() => setViewingPhoto({ id: u.id, url: u.avatar_url, name: u.name })} />
               </div>
               <div className="fb-user-card__body">
                 <div className="fb-user-card__meta">

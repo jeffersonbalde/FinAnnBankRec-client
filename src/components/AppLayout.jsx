@@ -7,6 +7,7 @@ import { useNotificationUnread } from '../context/NotificationUnreadContext'
 import { visibleNavItems } from '../lib/nav'
 import { ROLE_LABELS, ROLES } from '../lib/roles'
 import useLocalBackupSync from '../hooks/useLocalBackupSync'
+import usePhotoOk from '../hooks/usePhotoOk'
 import { fbConfirm, fbLoading, fbClose } from '../lib/confirm'
 import { notifyError } from '../lib/toast'
 import NotificationBell from './NotificationBell'
@@ -36,6 +37,7 @@ export default function AppLayout() {
   const hasUnsavedChanges = useModalDirty()
   const { unread } = useNotificationUnread()
   useLocalBackupSync(user?.role === ROLES.ADMIN)
+  const photo = usePhotoOk(user?.avatar_url)
 
   async function guardedNavigate(e, to) {
     if (!hasUnsavedChanges) return
@@ -144,7 +146,7 @@ export default function AppLayout() {
                 onClick={() => setMenuOpen((o) => !o)}
               >
                 <span className="fb-dash__avatar">
-                  {user?.avatar_url ? <img src={user.avatar_url} alt="" /> : initials(user?.name)}
+                  {photo.ok ? <img src={user.avatar_url} alt="" onError={photo.onError} /> : initials(user?.name)}
                 </span>
                 <span>
                   <span className="fb-dash__user-name" style={{ display: 'block' }}>
