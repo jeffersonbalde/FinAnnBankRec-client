@@ -184,3 +184,85 @@
   font-size: 0.8rem;
   color: var(--muted);
 }
+
+.fb-flags--embedded {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+}
+
+.fb-flags--embedded .fb-flags__group:first-child {
+  border-top: 0;
+}
+
+.fb-flags__nowrap {
+  white-space: nowrap;
+}
+
+/* The "86 cleared · 187 outstanding · 270 flags" line: each count opens its list. */
+.fb-mcounts {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.fb-mcounts__btn {
+  padding: 0.15rem 0.45rem;
+  border: 0;
+  border-radius: var(--radius-sm, 0.35rem);
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: inherit;
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2rem;
+}
+
+.fb-mcounts__btn:hover {
+  background: var(--fb-blue-soft, #e8f0fb);
+  color: var(--fb-blue-dark);
+}
+
+.fb-mcounts__btn.is-warn {
+  color: var(--warn);
+}
+
+.fb-mcounts__btn.is-warn:hover {
+  background: color-mix(in srgb, var(--warn) 12%, #fff);
+}
+
+.fb-mcounts__dot {
+  color: var(--faint);
+}
+
+.fb-mlist__sub {
+  margin: 0 0 0.85rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.fb-mlist__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.fb-mlist__search {
+  margin: 0 0 0 auto;
+  width: 100%;
+  max-width: 16rem;
+}
+
+.fb-mlist__scroll {
+  max-height: min(26rem, calc(100dvh - 20rem));
+}
+
+.fb-mlist__note {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.72rem;
+  color: var(--fb-blue-dark);
+}

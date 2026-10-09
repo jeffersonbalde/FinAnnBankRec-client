@@ -14,6 +14,7 @@ import Badge from '../../components/ui/Badge'
 import Modal from '../../components/ui/Modal'
 import { Field, TextInput } from '../../components/ui/Field'
 import FlagsPanel from './FlagsPanel'
+import MatchingListModal from './MatchingListModal'
 
 const CHECK_TONE = { cleared: 'green', outstanding: 'slate', stale: 'red', cancelled: 'amber' }
 
@@ -29,6 +30,7 @@ export default function MatchingTab({ reconciliation, onChanged }) {
   const [linkSearch, setLinkSearch] = useState('')
   const [cancelling, setCancelling] = useState(null)
   const [reason, setReason] = useState('')
+  const [listCategory, setListCategory] = useState(null) // 'cleared' | 'outstanding' | 'flags' | null
   const [cancelBusy, setCancelBusy] = useState(false)
 
   const isCancelDirty = !!cancelling && reason.trim() !== ''
@@ -142,13 +144,36 @@ export default function MatchingTab({ reconciliation, onChanged }) {
         {board?.last_run_at && (
           <span style={{ fontSize: '0.75rem', color: 'var(--faint)' }}>Last run {shortDate(board.last_run_at)}</span>
         )}
-        <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-          {checks.filter((c) => c.status === 'cleared').length} cleared · {outstandingChecks.length} outstanding ·{' '}
-          {flags.length} flags
+        <span className="fb-mcounts">
+          {[
+            ['cleared', checks.filter((c) => c.status === 'cleared').length, 'cleared'],
+            ['outstanding', outstandingChecks.length, 'outstanding'],
+            ['flags', flags.length, flags.length === 1 ? 'flag' : 'flags'],
+          ].map(([key, n, label], i) => (
+            <span key={key}>
+              {i > 0 && <span className="fb-mcounts__dot"> · </span>}
+              <button
+                type="button"
+                className={`fb-mcounts__btn${key === 'flags' && n > 0 ? ' is-warn' : ''}`}
+                onClick={() => setListCategory(key)}
+                title={`See the ${label} list`}
+              >
+                <strong>{n}</strong> {label}
+              </button>
+            </span>
+          ))}
         </span>
       </div>
 
       <FlagsPanel flags={flags} />
+
+      <MatchingListModal
+        category={listCategory}
+        onClose={() => setListCategory(null)}
+        checks={checks}
+        flags={flags}
+        reconciliation={reconciliation}
+      />
 
       <div className="fb-two">
         <div className="fb-card">

@@ -134,7 +134,7 @@ function Group({ group, items, defaultOpen }) {
   )
 }
 
-export default function FlagsPanel({ flags }) {
+export default function FlagsPanel({ flags, embedded = false }) {
   const grouped = useMemo(() => {
     const known = GROUPS.map((g) => ({ group: g, items: flags.filter((f) => f.type === g.type) }))
     const others = flags.filter((f) => !GROUPS.some((g) => g.type === f.type))
@@ -157,16 +157,24 @@ export default function FlagsPanel({ flags }) {
   if (flags.length === 0) return null
 
   return (
-    <div className="fb-flags">
-      <div className="fb-flags__top">
-        <FiAlertTriangle size={17} />
-        <strong>Needs your attention</strong>
-        <span className="fb-flags__total">
-          {flags.length} {flags.length === 1 ? 'item' : 'items'}
-        </span>
-      </div>
-      {grouped.map(({ group, items }) => (
-        <Group key={group.type} group={group} items={items} defaultOpen={flags.length <= 12} />
+    <div className={`fb-flags${embedded ? ' fb-flags--embedded' : ''}`}>
+      {!embedded && (
+        <div className="fb-flags__top">
+          <FiAlertTriangle size={17} />
+          <strong>Needs your attention</strong>
+          <span className="fb-flags__total">
+            {flags.length} {flags.length === 1 ? 'item' : 'items'}
+          </span>
+        </div>
+      )}
+      {grouped.map(({ group, items }, index) => (
+        <Group
+          key={group.type}
+          group={group}
+          items={items}
+          // Inside the list window the first group is already open; elsewhere a big list starts folded.
+          defaultOpen={flags.length <= 12 || (embedded && index === 0)}
+        />
       ))}
     </div>
   )
