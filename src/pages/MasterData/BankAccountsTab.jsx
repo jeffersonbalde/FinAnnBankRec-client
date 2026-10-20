@@ -27,12 +27,6 @@ const DEFAULT_SIGNATORIES = [
     name: 'FERNANDO M. MANLARAN',
     designation: 'Administrative Assistant III',
   },
-  {
-    block: 'disbursing_officer',
-    label: 'Disbursing Officer',
-    name: 'FERNANDO M. MANLARAN',
-    designation: 'Disbursing Officer',
-  },
 ]
 
 const BLANK = {

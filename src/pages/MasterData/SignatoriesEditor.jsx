@@ -8,7 +8,6 @@ import { TextInput, Select } from '../../components/ui/Field'
 const BLOCKS = [
   ['prepared_by', 'Prepared by'],
   ['certified_correct', 'Certified Correct'],
-  ['disbursing_officer', 'Disbursing Officer'],
 ]
 
 export default function SignatoriesEditor({ bankAccountId }) {
